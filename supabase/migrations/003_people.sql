@@ -3,7 +3,7 @@
 
 create table students (
   id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null unique references profiles(id) on delete cascade,
+  profile_id uuid unique references profiles(id) on delete cascade,
   institution_id uuid not null references institutions(id),
   course_id uuid not null references courses(id),
   class_id uuid references classes(id),
@@ -44,7 +44,7 @@ create trigger trg_preceptors_updated_at before update on preceptors
 
 create table coordinators (
   id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null unique references profiles(id) on delete cascade,
+  profile_id uuid unique references profiles(id) on delete cascade,
   institution_id uuid not null references institutions(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
