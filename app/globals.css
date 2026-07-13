@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-surface text-slate-900 antialiased;
+}
+
+/* Área de toque mínima recomendada (44x44px) para elementos interativos no mobile */
+.touch-target {
+  @apply min-h-touch min-w-touch flex items-center justify-center;
+}
