@@ -40,7 +40,7 @@ export default async function RelatoriosPage({
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
           <h2 className="mb-2 text-sm font-semibold text-slate-700">Registros por local</h2>
-          <SimpleBarChart data={recordsByLocation} color="#16a34a" />
+          <SimpleBarChart data={recordsByLocation} color="#B08D57" />
         </div>
       </div>
 

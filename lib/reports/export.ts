@@ -63,7 +63,7 @@ export function exportFrequencyToPdf(
     head: [HEADERS],
     body: toRows(data),
     styles: { fontSize: 8 },
-    headStyles: { fillColor: [29, 78, 216] },
+    headStyles: { fillColor: [36, 90, 61] },
   });
 
   doc.save(filename);

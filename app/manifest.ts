@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Registro e acompanhamento de frequência em estágios práticos de Medicina.',
     start_url: '/aluno/dashboard',
     display: 'standalone',
-    background_color: '#f8fafc',
-    theme_color: '#1d4ed8',
+    background_color: '#F7F3EC',
+    theme_color: '#123526',
     orientation: 'portrait',
     icons: [
       { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

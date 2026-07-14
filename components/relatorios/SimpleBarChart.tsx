@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import type { ChartPoint } from '@/lib/queries/reports';
 
-export function SimpleBarChart({ data, color = '#1d4ed8' }: { data: ChartPoint[]; color?: string }) {
+export function SimpleBarChart({ data, color = '#245A3D' }: { data: ChartPoint[]; color?: string }) {
   if (data.length === 0) {
     return <p className="text-sm text-slate-400">Sem dados para o período selecionado.</p>;
   }
