@@ -34,16 +34,16 @@ async function audit(action: string, entity: string, entityId: string, actorProf
 
 export async function approveAttendanceRecord(recordId: string): Promise<ActionResult> {
   const ctx = await getPreceptorContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
-  const { error, count } = await ctx.supabase
+  const { error, data } = await ctx.supabase
     .from('attendance_records')
     .update({ validation_status: 'aprovado', approved_by: ctx.profile.id, approved_at: new Date().toISOString() })
     .eq('id', recordId)
     .eq('preceptor_id', ctx.preceptorId)
-    .select('id', { count: 'exact' });
+    .select('id');
 
-  if (error || !count) return { success: false, error: 'Não foi possível aprovar o registro.' };
+  if (error || !data || data.length === 0) return { success: false, error: 'Não foi possível aprovar o registro.' };
 
   await audit('approve', 'attendance_records', recordId, ctx.profile.id);
   revalidatePath('/preceptor/aprovacoes');
@@ -54,16 +54,16 @@ export async function rejectAttendanceRecord(recordId: string, reason: string): 
   if (!reason.trim()) return { success: false, error: 'Informe o motivo da recusa.' };
 
   const ctx = await getPreceptorContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
-  const { error, count } = await ctx.supabase
+  const { error, data } = await ctx.supabase
     .from('attendance_records')
     .update({ validation_status: 'recusado', rejection_reason: reason, approved_by: ctx.profile.id, approved_at: new Date().toISOString() })
     .eq('id', recordId)
     .eq('preceptor_id', ctx.preceptorId)
-    .select('id', { count: 'exact' });
+    .select('id');
 
-  if (error || !count) return { success: false, error: 'Não foi possível recusar o registro.' };
+  if (error || !data || data.length === 0) return { success: false, error: 'Não foi possível recusar o registro.' };
 
   await audit('reject', 'attendance_records', recordId, ctx.profile.id);
   revalidatePath('/preceptor/aprovacoes');
@@ -72,7 +72,7 @@ export async function rejectAttendanceRecord(recordId: string, reason: string): 
 
 export async function bulkApproveRecords(recordIds: string[]): Promise<ActionResult> {
   const ctx = await getPreceptorContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
   if (recordIds.length === 0) return { success: true };
 
   const { error } = await ctx.supabase
@@ -100,16 +100,16 @@ export async function reviewAdjustment(
   }
 
   const ctx = await getPreceptorContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
-  const { error, count } = await ctx.supabase
+  const { error, data } = await ctx.supabase
     .from('attendance_adjustments')
     .update({ status, review_notes: reviewNotes ?? null, reviewed_by: ctx.profile.id, reviewed_at: new Date().toISOString() })
     .eq('id', adjustmentId)
     .eq('preceptor_id', ctx.preceptorId)
-    .select('id', { count: 'exact' });
+    .select('id');
 
-  if (error || !count) return { success: false, error: 'Não foi possível revisar a solicitação.' };
+  if (error || !data || data.length === 0) return { success: false, error: 'Não foi possível revisar a solicitação.' };
 
   await audit(`review:${status}`, 'attendance_adjustments', adjustmentId, ctx.profile.id);
   revalidatePath('/preceptor/aprovacoes');
@@ -128,16 +128,16 @@ export async function reviewJustification(
   }
 
   const ctx = await getPreceptorContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
-  const { error, count } = await ctx.supabase
+  const { error, data } = await ctx.supabase
     .from('absence_justifications')
     .update({ status, review_notes: reviewNotes ?? null, reviewed_by: ctx.profile.id, reviewed_at: new Date().toISOString() })
     .eq('id', justificationId)
     .eq('preceptor_id', ctx.preceptorId)
-    .select('id', { count: 'exact' });
+    .select('id');
 
-  if (error || !count) return { success: false, error: 'Não foi possível revisar a justificativa.' };
+  if (error || !data || data.length === 0) return { success: false, error: 'Não foi possível revisar a justificativa.' };
 
   await audit(`review:${status}`, 'absence_justifications', justificationId, ctx.profile.id);
   revalidatePath('/preceptor/aprovacoes');

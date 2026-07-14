@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 
-export async function getAttendanceRecordDetail(recordId: string) {
+export async function getAttendanceRecordDetail(recordId: string): Promise<any> {
   const supabase = await createClient();
 
   const { data } = await supabase

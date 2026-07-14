@@ -30,7 +30,7 @@ function firstIssue(error: { issues: { message: string }[] }) {
 
 export async function createInstitution(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = institutionSchema.safeParse({
     name: formData.get('name'),
@@ -58,7 +58,7 @@ export async function createInstitution(formData: FormData): Promise<ActionResul
 
 export async function deactivateInstitution(id: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const { error } = await ctx.supabase.from('institutions').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover a instituição.' };
@@ -71,7 +71,7 @@ export async function deactivateInstitution(id: string): Promise<ActionResult> {
 
 export async function createLocation(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = locationSchema.safeParse({
     institutionId: formData.get('institutionId'),
@@ -103,7 +103,7 @@ export async function createLocation(formData: FormData): Promise<ActionResult> 
 
 export async function deactivateLocation(id: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const { error } = await ctx.supabase.from('internship_locations').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o local.' };
@@ -116,7 +116,7 @@ export async function deactivateLocation(id: string): Promise<ActionResult> {
 
 export async function createPreceptor(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = preceptorSchema.safeParse({
     institutionId: formData.get('institutionId'),
@@ -146,7 +146,7 @@ export async function createPreceptor(formData: FormData): Promise<ActionResult>
 
 export async function deactivatePreceptor(id: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const { error } = await ctx.supabase.from('preceptors').update({ active: false }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível inativar o preceptor.' };
@@ -162,7 +162,7 @@ export async function deactivatePreceptor(id: string): Promise<ActionResult> {
 
 export async function createStudent(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = studentSchema.safeParse({
     institutionId: formData.get('institutionId'),
@@ -190,7 +190,7 @@ export async function createStudent(formData: FormData): Promise<ActionResult> {
 
 export async function deactivateStudent(id: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const { error } = await ctx.supabase.from('students').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o aluno.' };
@@ -203,7 +203,7 @@ export async function deactivateStudent(id: string): Promise<ActionResult> {
 
 export async function createInternship(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = internshipSchema.safeParse({
     institutionId: formData.get('institutionId'),
@@ -235,7 +235,7 @@ export async function createInternship(formData: FormData): Promise<ActionResult
 
 export async function deactivateInternship(id: string): Promise<ActionResult> {
   const ctx = await getAdminContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const { error } = await ctx.supabase.from('internships').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o estágio.' };

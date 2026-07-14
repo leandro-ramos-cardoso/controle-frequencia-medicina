@@ -54,7 +54,7 @@ export async function getFrequencyReport(filters: FrequencyReportFilters): Promi
 
   const rows: FrequencyReportRow[] = [];
 
-  for (const link of links) {
+  for (const link of links as any[]) {
     let recordsQuery = supabase
       .from('attendance_records')
       .select('*')
@@ -122,7 +122,7 @@ export async function getRecordsByLocationChart(filters: FrequencyReportFilters)
 
   const { data } = await query;
   const byLocation = new Map<string, number>();
-  for (const r of data ?? []) {
+  for (const r of (data ?? []) as any[]) {
     const name = r.internship_locations?.name ?? 'Sem local';
     byLocation.set(name, (byLocation.get(name) ?? 0) + 1);
   }

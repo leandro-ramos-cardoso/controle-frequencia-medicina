@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import { RefreshCw } from 'lucide-react';
-import type { GeolocationState } from '@/hooks/useGeolocation';
+import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
 
 // Leaflet acessa `window`/`document` — precisa ser carregado só no client.
 const LocationMap = dynamic(() => import('./LocationMap').then((m) => m.LocationMap), {
@@ -21,7 +21,7 @@ export function LocationStatusCard({
   address,
   target,
 }: {
-  geo: GeolocationState;
+  geo: UseGeolocationReturn;
   distanceMeters: number | null;
   locationStatus: 'dentro_do_raio' | 'atencao' | 'fora_do_raio' | null;
   address?: string | null;

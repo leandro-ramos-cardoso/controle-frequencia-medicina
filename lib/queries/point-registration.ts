@@ -41,12 +41,13 @@ export async function getPointRegistrationContext(
     .maybeSingle();
 
   if (!link) return null;
+  const lk = link as any;
 
   const { data: records } = await supabase
     .from('attendance_records')
     .select('*')
     .eq('student_id', student.id)
-    .eq('internship_id', link.internship_id)
+    .eq('internship_id', lk.internship_id)
     .order('server_recorded_at', { ascending: false })
     .limit(10);
 
@@ -57,21 +58,21 @@ export async function getPointRegistrationContext(
 
   return {
     studentId: student.id,
-    internshipId: link.internship_id,
-    internshipName: link.internships?.name ?? '',
-    location: link.internship_locations
+    internshipId: lk.internship_id,
+    internshipName: lk.internships?.name ?? '',
+    location: lk.internship_locations
       ? {
-          id: link.internship_locations.id,
-          name: link.internship_locations.name,
-          latitude: link.internship_locations.latitude,
-          longitude: link.internship_locations.longitude,
-          allowedRadiusMeters: link.internship_locations.allowed_radius_meters,
-          warningRadiusMeters: link.internship_locations.warning_radius_meters,
+          id: lk.internship_locations.id,
+          name: lk.internship_locations.name,
+          latitude: lk.internship_locations.latitude,
+          longitude: lk.internship_locations.longitude,
+          allowedRadiusMeters: lk.internship_locations.allowed_radius_meters,
+          warningRadiusMeters: lk.internship_locations.warning_radius_meters,
         }
       : null,
-    preceptorId: link.preceptors?.id ?? null,
-    preceptorName: link.preceptors?.full_name ?? null,
-    preceptorCrm: link.preceptors ? `${link.preceptors.crm_number}/${link.preceptors.crm_state}` : null,
+    preceptorId: lk.preceptors?.id ?? null,
+    preceptorName: lk.preceptors?.full_name ?? null,
+    preceptorCrm: lk.preceptors ? `${lk.preceptors.crm_number}/${lk.preceptors.crm_state}` : null,
     lastRecordToday,
   };
 }

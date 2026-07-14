@@ -18,11 +18,13 @@ const initialState: GeolocationState = {
   errorMessage: null,
 };
 
+export type UseGeolocationReturn = GeolocationState & { retry: () => void };
+
 /**
  * Captura a posição atual do dispositivo. Nunca aceita coordenadas digitadas —
  * este hook é a única fonte de latitude/longitude usada no registro de ponto.
  */
-export function useGeolocation() {
+export function useGeolocation(): UseGeolocationReturn {
   const [state, setState] = useState<GeolocationState>(initialState);
 
   const requestLocation = useCallback(() => {

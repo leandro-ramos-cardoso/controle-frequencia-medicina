@@ -45,44 +45,44 @@ export async function listInstitutions() {
   return data ?? [];
 }
 
-export async function listLocations() {
+export async function listLocations(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('internship_locations')
     .select('id, name, type, status, allowed_radius_meters, institutions(name)')
     .is('deleted_at', null)
     .order('name');
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
-export async function listPreceptors() {
+export async function listPreceptors(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('preceptors')
     .select('id, full_name, crm_number, crm_state, specialty, active, institutions(name)')
     .is('deleted_at', null)
     .order('full_name');
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
-export async function listStudents() {
+export async function listStudents(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('students')
     .select('id, registration_number, status, profiles(full_name), courses(name), institutions(name)')
     .is('deleted_at', null)
     .order('registration_number');
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
-export async function listInternships() {
+export async function listInternships(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('internships')
     .select('id, code, name, start_date, end_date, required_hours, institutions(name), courses(name)')
     .is('deleted_at', null)
     .order('start_date', { ascending: false });
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 /** Usado para popular os <select> dos formulários de cadastro. */

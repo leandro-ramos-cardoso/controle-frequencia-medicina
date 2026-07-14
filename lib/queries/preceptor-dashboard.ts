@@ -30,7 +30,7 @@ export async function getSupervisedStudents(preceptorId: string): Promise<Superv
   const today = new Date().toISOString().slice(0, 10);
 
   const results: SupervisedStudent[] = [];
-  for (const link of links) {
+  for (const link of links as any[]) {
     const { data: lastRecord } = await supabase
       .from('attendance_records')
       .select('record_type, server_recorded_at, distance_meters')

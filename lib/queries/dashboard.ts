@@ -41,6 +41,7 @@ export async function getStudentDashboardData(profileId: string): Promise<Studen
     .single();
 
   if (!student) return null;
+  const s = student as any;
 
   const { data: link } = await supabase
     .from('internship_students')
@@ -54,8 +55,9 @@ export async function getStudentDashboardData(profileId: string): Promise<Studen
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
+  const lk = link as any;
 
-  const internshipId: string | null = link?.internship_id ?? null;
+  const internshipId: string | null = lk?.internship_id ?? null;
 
   const { data: recordsData } = internshipId
     ? await supabase
@@ -93,27 +95,27 @@ export async function getStudentDashboardData(profileId: string): Promise<Studen
     .eq('student_id', student.id)
     .in('status', ['enviada', 'em_analise']);
 
-  const requiredHours = link?.internships?.required_hours ?? student.required_hours ?? 0;
+  const requiredHours = lk?.internships?.required_hours ?? s.required_hours ?? 0;
   const hoursCompleted = calculateCompletedHours(records);
 
   // TODO (etapa 8): substituir por verificação real contra `schedules` do estágio.
   const isWithinSchedule = true;
 
   return {
-    studentId: student.id,
-    studentName: student.profiles?.full_name ?? '',
-    courseName: student.courses?.name ?? '',
-    className: student.classes?.name ?? null,
-    institutionName: student.institutions?.name ?? '',
-    internship: link
+    studentId: s.id,
+    studentName: s.profiles?.full_name ?? '',
+    courseName: s.courses?.name ?? '',
+    className: s.classes?.name ?? null,
+    institutionName: s.institutions?.name ?? '',
+    internship: lk
       ? {
-          id: link.internship_id,
-          name: link.internships?.name ?? '',
+          id: lk.internship_id,
+          name: lk.internships?.name ?? '',
           requiredHours,
-          locationName: link.internship_locations?.name ?? null,
-          preceptorName: link.preceptors?.full_name ?? null,
-          preceptorCrm: link.preceptors
-            ? `${link.preceptors.crm_number}/${link.preceptors.crm_state}`
+          locationName: lk.internship_locations?.name ?? null,
+          preceptorName: lk.preceptors?.full_name ?? null,
+          preceptorCrm: lk.preceptors
+            ? `${lk.preceptors.crm_number}/${lk.preceptors.crm_state}`
             : null,
         }
       : null,

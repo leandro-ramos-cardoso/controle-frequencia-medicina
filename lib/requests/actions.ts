@@ -35,7 +35,7 @@ async function getStudentContext() {
 
 export async function createAttendanceAdjustment(formData: FormData): Promise<ActionResult> {
   const ctx = await getStudentContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
 
   const parsed = adjustmentRequestSchema.safeParse({
     attendanceRecordId: formData.get('attendanceRecordId') || undefined,
@@ -85,7 +85,7 @@ export async function createAttendanceAdjustment(formData: FormData): Promise<Ac
 
 export async function createAbsenceJustification(formData: FormData): Promise<ActionResult> {
   const ctx = await getStudentContext();
-  if ('error' in ctx) return { success: false, error: ctx.error };
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
   if (!ctx.internshipId) {
     return { success: false, error: 'Você não está vinculado a nenhum estágio ativo.' };
   }
