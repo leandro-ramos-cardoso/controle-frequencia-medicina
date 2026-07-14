@@ -15,3 +15,30 @@ body {
 .touch-target {
   @apply min-h-touch min-w-touch flex items-center justify-center;
 }
+
+/*
+ * Bug do WebKit (Safari/Chrome no iPhone): <select>, <input type="date"> e
+ * <input type="time"> às vezes ignoram width:100% e a caixa do controle
+ * nativo estoura a largura do container, cortando a borda direita na tela.
+ * Tirar a aparência nativa (appearance: none) e forçar box-sizing resolve —
+ * aplicado globalmente para não precisar caçar cada formulário.
+ */
+select,
+input[type='date'],
+input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sem a aparência nativa, o <select> perde a setinha — devolve um ícone
+   discreto de seta pra baixo pra continuar parecendo um dropdown. */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+}
