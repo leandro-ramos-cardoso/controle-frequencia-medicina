@@ -74,8 +74,46 @@ export function useGeolocation(): UseGeolocationReturn {
     );
   }, []);
 
+  /**
+   * Ao montar, só dispara o pedido de localização automaticamente se a
+   * permissão já tiver sido concedida antes (nesse caso o navegador nem
+   * mostra prompt algum). Se ainda não foi decidida ou foi negada, o hook
+   * fica em 'idle' e espera uma chamada explícita a retry() — pedir a
+   * permissão "do nada", assim que a tela abre, é o que mais faz as
+   * pessoas negarem por reflexo. A UI deve mostrar uma explicação com um
+   * botão antes de chamar retry() pela primeira vez.
+   */
   useEffect(() => {
-    requestLocation();
+    let cancelled = false;
+
+    if (!('geolocation' in navigator)) {
+      setState({
+        ...initialState,
+        status: 'unavailable',
+        errorMessage: 'Este dispositivo não suporta geolocalização.',
+      });
+      return;
+    }
+
+    if ('permissions' in navigator) {
+      navigator.permissions
+        .query({ name: 'geolocation' as PermissionName })
+        .then((result) => {
+          if (cancelled) return;
+          if (result.state === 'granted') {
+            requestLocation();
+          }
+          // 'prompt' ou 'denied': permanece em 'idle' até o usuário tocar em "Permitir localização".
+        })
+        .catch(() => {
+          // Permissions API indisponível em alguns navegadores — fica em 'idle',
+          // o usuário aciona manualmente pelo botão.
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [requestLocation]);
 
   return { ...state, retry: requestLocation };
