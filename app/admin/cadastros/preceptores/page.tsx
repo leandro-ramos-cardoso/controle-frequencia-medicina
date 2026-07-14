@@ -9,7 +9,7 @@ export default async function PreceptoresPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Preceptores</h1>
 
-      <form action={createPreceptor} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <form action={async (formData: FormData) => { await createPreceptor(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
         <select name="institutionId" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2">
           <option value="">Instituição *</option>
           {institutions.map((i) => (

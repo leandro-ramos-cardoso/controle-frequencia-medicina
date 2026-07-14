@@ -9,7 +9,7 @@ export default async function EstagiosPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Estágios</h1>
 
-      <form action={createInternship} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <form action={async (formData: FormData) => { await createInternship(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
         <select name="institutionId" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
           <option value="">Instituição *</option>
           {institutions.map((i) => (

@@ -9,7 +9,7 @@ export default async function InstituicoesPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Instituições</h1>
 
-      <form action={createInstitution} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <form action={async (formData: FormData) => { await createInstitution(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
         <input name="name" required placeholder="Nome *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
         <input name="cnpj" placeholder="CNPJ" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="responsibleName" placeholder="Responsável" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
