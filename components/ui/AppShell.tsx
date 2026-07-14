@@ -31,7 +31,7 @@ export function AppShell({
           </form>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-6">{children}</main>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-6">{children}</main>
 
         <BottomNav items={items} />
       </div>

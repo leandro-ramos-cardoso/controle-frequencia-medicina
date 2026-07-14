@@ -25,22 +25,22 @@ export function JustificationForm() {
   return (
     <form action={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-sm font-medium text-slate-700">Data inicial</label>
           <input
             type="date"
             name="absenceStart"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+            className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-sm font-medium text-slate-700">Data final</label>
           <input
             type="date"
             name="absenceEnd"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+            className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
           />
         </div>
       </div>

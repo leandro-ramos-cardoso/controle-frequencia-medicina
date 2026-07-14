@@ -24,8 +24,8 @@ export default async function EstagiosPage() {
         </select>
         <input name="code" required placeholder="Código *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="name" required placeholder="Nome *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input name="startDate" type="date" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input name="endDate" type="date" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <input name="startDate" type="date" required className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <input name="endDate" type="date" required className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="requiredHours" type="number" defaultValue={0} placeholder="Carga horária" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <textarea name="description" placeholder="Descrição" rows={2} className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
         <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white sm:col-span-2">

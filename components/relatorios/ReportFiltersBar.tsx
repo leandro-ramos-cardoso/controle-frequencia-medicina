@@ -34,14 +34,14 @@ export function ReportFiltersBar({ internships }: { internships: { id: string; n
         aria-label="Data inicial"
         defaultValue={searchParams.get('startDate') ?? ''}
         onChange={(e) => updateParam('startDate', e.target.value)}
-        className="rounded-lg border border-slate-300 px-2.5 py-2 text-sm"
+        className="min-w-0 rounded-lg border border-slate-300 px-2.5 py-2 text-sm"
       />
       <input
         type="date"
         aria-label="Data final"
         defaultValue={searchParams.get('endDate') ?? ''}
         onChange={(e) => updateParam('endDate', e.target.value)}
-        className="rounded-lg border border-slate-300 px-2.5 py-2 text-sm"
+        className="min-w-0 rounded-lg border border-slate-300 px-2.5 py-2 text-sm"
       />
     </div>
   );

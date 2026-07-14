@@ -54,21 +54,21 @@ export function AdjustmentForm({
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-sm font-medium text-slate-700">Data</label>
           <input
             type="date"
             name="requestedDate"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+            className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-sm font-medium text-slate-700">Horário</label>
           <input
             type="time"
             name="requestedTime"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+            className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
           />
         </div>
       </div>
