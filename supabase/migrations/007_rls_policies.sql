@@ -3,21 +3,40 @@
 -- Convenção: auth.uid() = profiles.id (1:1 com auth.users).
 
 -- Função utilitária: retorna o perfil (role) do usuário logado
+-- SECURITY DEFINER é obrigatório aqui: esta função é usada dentro de uma
+-- policy da própria tabela `profiles`. Sem SECURITY DEFINER, a consulta
+-- interna a `profiles` reavalia a RLS de `profiles`, que chama esta função
+-- de novo -> recursão infinita ("stack depth limit exceeded").
 create or replace function auth_role()
-returns user_role as $$
+returns user_role
+language sql
+stable
+security definer
+set search_path = public
+as $$
   select role from profiles where id = auth.uid();
-$$ language sql stable;
+$$;
 
 -- Função utilitária: id do registro students/preceptors/coordinators do usuário logado
 create or replace function auth_student_id()
-returns uuid as $$
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
   select id from students where profile_id = auth.uid();
-$$ language sql stable;
+$$;
 
 create or replace function auth_preceptor_id()
-returns uuid as $$
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
   select id from preceptors where profile_id = auth.uid();
-$$ language sql stable;
+$$;
 
 -- ============ profiles ============
 alter table profiles enable row level security;
