@@ -64,5 +64,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)'],
+  // Exclui _next, favicon, manifest/sw e QUALQUER arquivo estático por
+  // extensão (antes só 4 nomes fixos estavam excluídos — isso deixava
+  // /images/*, /icons/* etc. passarem pelo middleware e serem redirecionados
+  // para /login quando não autenticado, quebrando imagens públicas).
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|map|txt|woff|woff2)$).*)',
+  ],
 };
