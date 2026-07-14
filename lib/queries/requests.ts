@@ -32,6 +32,8 @@ export async function getRecentRecordOptions(profileId: string) {
     label: `${TYPE_LABEL[r.record_type] ?? r.record_type} — ${new Date(r.server_recorded_at).toLocaleString('pt-BR')}`,
   }));
 }
+
+export async function getStudentRequests(profileId: string): Promise<RequestListItem[]> {
   const supabase = await createClient();
 
   const { data: student } = await supabase.from('students').select('id').eq('profile_id', profileId).single();
