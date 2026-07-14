@@ -35,10 +35,10 @@ export default async function EstagiosPage() {
 
       <div className="space-y-2">
         {internships.map((i) => (
-          <div key={i.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-            <div>
-              <p className="text-sm font-medium text-slate-900">{i.name} <span className="text-slate-400">({i.code})</span></p>
-              <p className="text-xs text-slate-400">
+          <div key={i.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-900">{i.name} <span className="text-slate-400">({i.code})</span></p>
+              <p className="truncate text-xs text-slate-400">
                 {i.institutions?.name} · {i.courses?.name} ·{' '}
                 {new Date(i.start_date).toLocaleDateString('pt-BR')} a {new Date(i.end_date).toLocaleDateString('pt-BR')}
               </p>

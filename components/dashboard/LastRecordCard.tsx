@@ -39,14 +39,14 @@ export function LastRecordCard({ record }: { record: AttendanceRecord | null }) 
   const date = new Date(record.server_recorded_at).toLocaleDateString('pt-BR');
 
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-      <div>
-        <p className="text-sm font-medium text-slate-900">{TYPE_LABEL[record.record_type]}</p>
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-slate-900">{TYPE_LABEL[record.record_type]}</p>
         <p className="text-xs text-slate-500">
           {date} às {time}
         </p>
       </div>
-      <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}>
+      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${status.className}`}>
         {status.label}
       </span>
     </div>

@@ -29,10 +29,10 @@ export default async function PreceptoresPage() {
 
       <div className="space-y-2">
         {preceptors.map((p) => (
-          <div key={p.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-            <div>
-              <p className="text-sm font-medium text-slate-900">{p.full_name}</p>
-              <p className="text-xs text-slate-400">
+          <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-900">{p.full_name}</p>
+              <p className="truncate text-xs text-slate-400">
                 CRM {p.crm_number}/{p.crm_state} · {p.institutions?.name}
                 {!p.active && ' · inativo'}
               </p>

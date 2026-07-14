@@ -26,7 +26,7 @@ export default async function RelatoriosPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-lg font-semibold text-slate-900">Relatórios</h1>
         <ExportButtons data={report} />
       </div>
@@ -45,7 +45,7 @@ export default async function RelatoriosPage({
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-card">
-        <div className="flex items-center justify-between border-b border-slate-100 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 p-4">
           <h2 className="text-sm font-semibold text-slate-700">Frequência por aluno</h2>
           <p className="text-xs text-slate-400">
             Total: {totalCompleted}h de {totalRequired}h previstas

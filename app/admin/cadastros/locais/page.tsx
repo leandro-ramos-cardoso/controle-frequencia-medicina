@@ -30,10 +30,10 @@ export default async function LocaisPage() {
 
       <div className="space-y-2">
         {locations.map((loc) => (
-          <div key={loc.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-            <div>
-              <p className="text-sm font-medium text-slate-900">{loc.name}</p>
-              <p className="text-xs text-slate-400">
+          <div key={loc.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-900">{loc.name}</p>
+              <p className="truncate text-xs text-slate-400">
                 {loc.institutions?.name} · raio {loc.allowed_radius_meters}m
               </p>
             </div>

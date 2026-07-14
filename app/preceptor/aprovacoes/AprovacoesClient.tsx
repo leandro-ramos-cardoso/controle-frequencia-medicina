@@ -86,7 +86,7 @@ export function AprovacoesClient({
     <div className="space-y-4">
       <h1 className="text-lg font-semibold text-slate-900">Aprovações</h1>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {tabs.map((t) => (
           <button
             key={t.key}

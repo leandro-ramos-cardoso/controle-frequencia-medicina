@@ -23,10 +23,10 @@ export default async function InstituicoesPage() {
 
       <div className="space-y-2">
         {institutions.map((inst) => (
-          <div key={inst.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-            <div>
-              <p className="text-sm font-medium text-slate-900">{inst.name}</p>
-              <p className="text-xs text-slate-400">{inst.cnpj ?? 'sem CNPJ'} · {inst.responsible_name ?? '—'}</p>
+          <div key={inst.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-900">{inst.name}</p>
+              <p className="truncate text-xs text-slate-400">{inst.cnpj ?? 'sem CNPJ'} · {inst.responsible_name ?? '—'}</p>
             </div>
             <DeleteButton action={deactivateInstitution.bind(null, inst.id)} />
           </div>

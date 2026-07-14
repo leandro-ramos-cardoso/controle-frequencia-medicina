@@ -22,24 +22,24 @@ export function StudentRow({
   const status = SITUACAO_TEXT[situacao];
 
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
           {fullName
             .split(' ')
             .slice(0, 2)
             .map((n) => n[0])
             .join('')}
         </div>
-        <div>
-          <p className="text-sm font-medium text-slate-900">{fullName}</p>
-          <p className="text-xs text-slate-400">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-900">{fullName}</p>
+          <p className="truncate text-xs text-slate-400">
             {registrationNumber} · {internshipName}
           </p>
         </div>
       </div>
 
-      <div className="text-right">
+      <div className="shrink-0 text-right">
         <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.className}`}>{status.label}</span>
         {lastRecordTime && (
           <p className="mt-1 text-xs text-slate-400">

@@ -40,16 +40,16 @@ export default async function SolicitacoesPage() {
           {requests.map((r) => (
             <li
               key={`${r.kind}-${r.id}`}
-              className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-card"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card"
             >
-              <div>
-                <p className="text-sm font-medium text-slate-900">{r.summary}</p>
-                <p className="text-xs text-slate-400">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-slate-900">{r.summary}</p>
+                <p className="truncate text-xs text-slate-400">
                   {r.kind === 'ajuste' ? 'Ajuste de ponto' : 'Justificativa de ausência'} ·{' '}
                   {new Date(r.createdAt).toLocaleDateString('pt-BR')}
                 </p>
               </div>
-              <RequestStatusBadge status={r.status} />
+              <span className="shrink-0"><RequestStatusBadge status={r.status} /></span>
             </li>
           ))}
         </ul>
