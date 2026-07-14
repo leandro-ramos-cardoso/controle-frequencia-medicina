@@ -8,29 +8,12 @@ const LocationMap = dynamic(() => import('./LocationMap').then((m) => m.Location
   loading: () => <div className="h-48 w-full animate-pulse rounded-xl bg-slate-100" />,
 });
 
-const STATUS_TEXT: Record<string, { label: string; className: string }> = {
-  dentro_do_raio: { label: 'Dentro do local do estágio', className: 'text-emerald-700 bg-emerald-50' },
-  atencao: { label: 'Próximo ao limite do perímetro', className: 'text-amber-700 bg-amber-50' },
-  fora_do_raio: { label: 'Fora do perímetro permitido', className: 'text-red-700 bg-red-50' },
-};
-
 export function LocationStatusCard({
   geo,
-  distanceMeters,
-  locationStatus,
   address,
-  target,
 }: {
   geo: UseGeolocationReturn;
-  distanceMeters: number | null;
-  locationStatus: 'dentro_do_raio' | 'atencao' | 'fora_do_raio' | null;
   address?: string | null;
-  target?: {
-    latitude: number;
-    longitude: number;
-    allowedRadiusMeters: number;
-    warningRadiusMeters: number;
-  } | null;
 }) {
   if (geo.status === 'idle') {
     return (
@@ -41,8 +24,8 @@ export function LocationStatusCard({
         <div>
           <p className="text-sm font-semibold text-brand-800">Precisamos da sua localização</p>
           <p className="mt-1 text-xs leading-relaxed text-brand-700/80">
-            É assim que confirmamos que você está no local do estágio. Seu navegador vai
-            perguntar uma vez — depois disso não pergunta de novo neste aparelho.
+            Registramos onde você estava no momento do ponto. Seu navegador vai perguntar uma
+            vez — depois disso não pergunta de novo neste aparelho.
           </p>
         </div>
         <button
@@ -78,24 +61,9 @@ export function LocationStatusCard({
     );
   }
 
-  const status = locationStatus ? STATUS_TEXT[locationStatus] : null;
-
   return (
     <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-      <LocationMap
-        userLat={geo.latitude!}
-        userLon={geo.longitude!}
-        targetLat={target?.latitude}
-        targetLon={target?.longitude}
-        allowedRadiusMeters={target?.allowedRadiusMeters}
-        warningRadiusMeters={target?.warningRadiusMeters}
-      />
-
-      {status && (
-        <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${status.className}`}>
-          {status.label}
-        </span>
-      )}
+      <LocationMap userLat={geo.latitude!} userLon={geo.longitude!} />
 
       <dl className="grid grid-cols-2 gap-y-1 text-sm text-slate-600">
         {address && (
@@ -106,8 +74,6 @@ export function LocationStatusCard({
         )}
         <dt className="text-slate-400">Precisão</dt>
         <dd>{geo.accuracyMeters?.toFixed(2)} m</dd>
-        <dt className="text-slate-400">Distância do estágio</dt>
-        <dd>{distanceMeters !== null ? `${distanceMeters} m` : '—'}</dd>
         <dt className="text-slate-400">Data</dt>
         <dd>{new Date().toLocaleDateString('pt-BR')}</dd>
         <dt className="text-slate-400">Hora</dt>

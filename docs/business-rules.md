@@ -35,6 +35,9 @@ auditoria; exportar dados; bloquear/reativar usuários.
 ## Status de validação
 `Aprovado · Pendente · Recusado · Em análise · Ajustado · Fora do perímetro ·
 Incompleto · Cancelado` — sempre exibidos com ícone + cor (nunca só cor).
+"Fora do perímetro" ficou como valor do enum por compatibilidade, mas não é
+mais atribuído automaticamente — não há mais local/geofence obrigatório,
+o aluno pode registrar de qualquer lugar (mudança de requisito).
 
 ## Solicitação de ajuste
 Aluno nunca edita o registro original; o sistema cria uma solicitação vinculada,

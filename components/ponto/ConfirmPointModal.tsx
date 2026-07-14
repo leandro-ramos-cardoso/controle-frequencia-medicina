@@ -16,7 +16,6 @@ export function ConfirmPointModal({
   recordType,
   internshipName,
   preceptorName,
-  distanceMeters,
   accuracyMeters,
   submitting,
   onCancel,
@@ -26,7 +25,6 @@ export function ConfirmPointModal({
   recordType: string;
   internshipName: string;
   preceptorName: string | null;
-  distanceMeters: number | null;
   accuracyMeters: number | null;
   submitting: boolean;
   onCancel: () => void;
@@ -49,10 +47,6 @@ export function ConfirmPointModal({
           <div className="flex justify-between">
             <dt className="text-slate-400">Preceptor</dt>
             <dd>{preceptorName ?? '—'}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-slate-400">Distância</dt>
-            <dd>{distanceMeters !== null ? `${distanceMeters} m` : '—'}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-slate-400">Precisão</dt>

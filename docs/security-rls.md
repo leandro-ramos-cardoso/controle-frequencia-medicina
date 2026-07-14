@@ -16,8 +16,13 @@
 - Validação de sequência de pontos no backend (não só no cliente).
 
 ## Geolocalização
-- Solicitar permissão; capturar lat/long + precisão em metros.
-- Calcular distância até o local do estágio; aplicar geofence configurável pelo admin (padrão: ≤100m permitido, 100–150m atenção, >150m bloqueado).
+- Solicitar permissão; capturar lat/long + precisão em metros — só quando o
+  aluno toca em "Permitir localização" (nunca automaticamente ao abrir a tela,
+  para não disparar o prompt nativo sem contexto).
+- **Sem geofence/local obrigatório** (mudança de requisito): o aluno pode
+  registrar o ponto de qualquer lugar. Coordenadas continuam sendo
+  capturadas e gravadas para histórico/auditoria, mas nunca bloqueiam nem
+  classificam o registro por distância.
 - Tratar: permissão negada, GPS desligado, baixa precisão, tentativa de novo posicionamento.
 - Formulário nunca aceita coordenadas digitadas manualmente.
 

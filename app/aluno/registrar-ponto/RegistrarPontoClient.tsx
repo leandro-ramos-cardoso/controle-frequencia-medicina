@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, CloudOff } from 'lucide-react';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { distanceInMeters } from '@/lib/geolocation/distance';
-import { getLocationStatus } from '@/lib/geolocation/geofence';
 import { reverseGeocode } from '@/lib/geolocation/reverse-geocode';
 import { registerAttendance } from '@/lib/attendance/actions';
 import { queueAttendance } from '@/lib/offline/queue';
@@ -39,18 +37,6 @@ export function RegistrarPontoClient({
       reverseGeocode(geo.latitude, geo.longitude).then(setAddress);
     }
   }, [geo.status, geo.latitude, geo.longitude]);
-
-  const distanceMeters = useMemo(() => {
-    if (geo.status !== 'granted' || !context.location || geo.latitude === null || geo.longitude === null) {
-      return null;
-    }
-    return distanceInMeters(geo.latitude, geo.longitude, context.location.latitude, context.location.longitude);
-  }, [geo.status, geo.latitude, geo.longitude, context.location]);
-
-  const locationStatus = useMemo(() => {
-    if (distanceMeters === null || !context.location) return null;
-    return getLocationStatus(distanceMeters, context.location.allowedRadiusMeters, context.location.warningRadiusMeters);
-  }, [distanceMeters, context.location]);
 
   async function handleConfirm() {
     if (geo.status !== 'granted' || geo.latitude === null || geo.longitude === null || geo.accuracyMeters === null) {
@@ -143,13 +129,7 @@ export function RegistrarPontoClient({
         <p className="text-sm text-slate-500">{context.internshipName}</p>
       </div>
 
-      <LocationStatusCard
-        geo={geo}
-        distanceMeters={distanceMeters}
-        locationStatus={locationStatus}
-        address={address}
-        target={context.location}
-      />
+      <LocationStatusCard geo={geo} address={address} />
 
       {!isOnline && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
@@ -176,7 +156,6 @@ export function RegistrarPontoClient({
         recordType={nextAction.recordType}
         internshipName={context.internshipName}
         preceptorName={context.preceptorName}
-        distanceMeters={distanceMeters}
         accuracyMeters={geo.accuracyMeters}
         submitting={submitting}
         onCancel={() => setModalOpen(false)}

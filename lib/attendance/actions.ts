@@ -5,15 +5,17 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentProfile } from '@/lib/auth/get-profile';
 import { registerAttendanceSchema, type RegisterAttendanceInput } from '@/lib/validations/attendance';
 import { getPointRegistrationContext } from '@/lib/queries/point-registration';
-import { distanceInMeters } from '@/lib/geolocation/distance';
-import { getLocationStatus } from '@/lib/geolocation/geofence';
 import { canTransitionTo } from '@/lib/attendance/next-action';
-import type { LocationStatus, ValidationStatus } from '@/types/attendance';
 
 export type RegisterAttendanceResult =
-  | { success: true; recordId: string; locationStatus: LocationStatus | null; protocol: string }
+  | { success: true; recordId: string; protocol: string }
   | { success: false; error: string };
 
+/**
+ * Não há mais local/geofence obrigatório — o aluno pode registrar o ponto
+ * de qualquer lugar. As coordenadas ainda são capturadas e gravadas (para
+ * histórico/auditoria), mas nunca bloqueiam ou classificam o registro.
+ */
 export async function registerAttendance(
   input: RegisterAttendanceInput
 ): Promise<RegisterAttendanceResult> {
@@ -41,26 +43,6 @@ export async function registerAttendance(
     };
   }
 
-  let distanceMeters: number | null = null;
-  let locationStatus: LocationStatus | null = null;
-
-  if (context.location) {
-    distanceMeters = distanceInMeters(
-      parsed.data.latitude,
-      parsed.data.longitude,
-      context.location.latitude,
-      context.location.longitude
-    );
-    locationStatus = getLocationStatus(
-      distanceMeters,
-      context.location.allowedRadiusMeters,
-      context.location.warningRadiusMeters
-    );
-  }
-
-  const validationStatus: ValidationStatus =
-    locationStatus === 'fora_do_raio' ? 'fora_do_perimetro' : 'pendente';
-
   const supabase = await createClient();
   const now = new Date().toISOString();
 
@@ -77,10 +59,8 @@ export async function registerAttendance(
       latitude: parsed.data.latitude,
       longitude: parsed.data.longitude,
       accuracy_meters: parsed.data.accuracyMeters,
-      distance_meters: distanceMeters,
       address: parsed.data.address ?? null,
-      location_status: locationStatus,
-      validation_status: validationStatus,
+      validation_status: 'pendente',
       device_info: parsed.data.deviceInfo ?? null,
       idempotency_key: parsed.data.idempotencyKey,
       offline_created_at: parsed.data.offlineCreatedAt ?? null,
@@ -100,12 +80,7 @@ export async function registerAttendance(
         .single();
 
       if (existing) {
-        return {
-          success: true,
-          recordId: existing.id,
-          locationStatus,
-          protocol: existing.id.slice(0, 8).toUpperCase(),
-        };
+        return { success: true, recordId: existing.id, protocol: existing.id.slice(0, 8).toUpperCase() };
       }
     }
     return { success: false, error: 'Não foi possível gravar o registro. Tente novamente.' };
@@ -119,16 +94,11 @@ export async function registerAttendance(
       action: 'create',
       entity: 'attendance_records',
       entity_id: inserted.id,
-      new_data: { record_type: parsed.data.recordType, validation_status: validationStatus },
+      new_data: { record_type: parsed.data.recordType, validation_status: 'pendente' },
     });
   } catch {
     // Falha de auditoria não deve impedir a confirmação do ponto ao aluno.
   }
 
-  return {
-    success: true,
-    recordId: inserted.id,
-    locationStatus,
-    protocol: inserted.id.slice(0, 8).toUpperCase(),
-  };
+  return { success: true, recordId: inserted.id, protocol: inserted.id.slice(0, 8).toUpperCase() };
 }
