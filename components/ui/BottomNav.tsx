@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/lib/navigation';
+import { ICONS } from '@/components/ui/icon-map';
 
 export function BottomNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
@@ -14,7 +15,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
     >
       {items.map((item) => {
         const active = pathname.startsWith(item.href);
-        const Icon = item.icon;
+        const Icon = ICONS[item.icon];
 
         if (item.highlight) {
           return (

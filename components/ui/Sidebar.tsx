@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import type { NavItem } from '@/lib/navigation';
+import { ICONS } from '@/components/ui/icon-map';
 import { signOut } from '@/lib/auth/actions';
 
 export function Sidebar({ items, userName }: { items: NavItem[]; userName: string }) {
@@ -34,7 +35,7 @@ export function Sidebar({ items, userName }: { items: NavItem[]; userName: strin
         <nav className="mt-2 flex flex-col gap-1 px-2">
           {items.map((item) => {
             const active = pathname.startsWith(item.href);
-            const Icon = item.icon;
+            const Icon = ICONS[item.icon];
             return (
               <Link
                 key={item.href}
