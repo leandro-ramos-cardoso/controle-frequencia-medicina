@@ -69,7 +69,9 @@ export async function listStudents(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('students')
-    .select('id, registration_number, status, profiles(full_name), courses(name), institutions(name)')
+    .select(
+      'id, registration_number, status, institution_id, course_id, contact_email, required_hours, profiles(full_name), courses(name), institutions(name)'
+    )
     .is('deleted_at', null)
     .order('registration_number');
   return (data ?? []) as any[];
@@ -82,6 +84,22 @@ export async function listInternships(): Promise<any[]> {
     .select('id, code, name, start_date, end_date, required_hours, institutions(name), courses(name)')
     .is('deleted_at', null)
     .order('start_date', { ascending: false });
+  return (data ?? []) as any[];
+}
+
+export async function listAuditLogs(): Promise<any[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('audit_logs')
+    .select('id, action, entity, entity_id, created_at, profiles(full_name)')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  return (data ?? []) as any[];
+}
+
+export async function listSystemSettings(): Promise<any[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from('system_settings').select('id, key, value, description').order('key');
   return (data ?? []) as any[];
 }
 

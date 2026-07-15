@@ -30,9 +30,13 @@ seção "Seed de demonstração".
 - **Cadastro de cursos/turmas/períodos acadêmicos:** não existe tela própria;
   hoje só dá para popular `courses`/`classes`/`academic_periods` via SQL direto.
   Os formulários de aluno/estágio dependem de `courses` já ter dados.
-- **Convite de acesso (aluno/preceptor):** `students`/`preceptors` são criados
-  sem `profile_id` — falta o fluxo de convite que cria o usuário no Supabase
-  Auth e vincula ao registro (Admin API do Supabase, fora do client comum).
+- **Convite de acesso — aluno:** resolvido. `createStudent`/`updateStudent`
+  (`lib/admin/actions.ts`) criam o usuário no Supabase Auth (Admin API,
+  `service_role`) e o `profile` vinculado no momento do cadastro; o aluno
+  usa "Esqueci minha senha" com o e-mail informado para definir a senha.
+- **Convite de acesso — preceptor:** ainda pendente. `preceptors` continua
+  sendo criado sem `profile_id`; seguir o mesmo padrão usado para aluno
+  quando for implementar.
 - **Gráficos do painel administrativo (item 17 da especificação):** resolvido
   na etapa 13 com `recharts`, implementado em `/admin/relatorios` (não duplicado
   no dashboard).
@@ -43,7 +47,6 @@ seção "Seed de demonstração".
   pontos recusados, pontos fora do perímetro, atividades por preceptor) ainda
   não têm tela própria — seguem o mesmo padrão de `lib/queries/reports.ts` +
   `lib/reports/export.ts`, é só estender.
-- **Perfil do preceptor:** o item de navegação existe, a página ainda não.
 - **`isWithinSchedule`** no registro de ponto está fixo em `true` — falta
   cruzar com a tabela `schedules`.
 - **Ícones do PWA:** `app/manifest.ts` referencia `/icons/icon-192.png`,

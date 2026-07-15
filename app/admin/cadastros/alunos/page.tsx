@@ -1,7 +1,8 @@
 import { listStudents, listOptionsForForms } from '@/lib/queries/admin';
-import { createStudent, deactivateStudent } from '@/lib/admin/actions';
+import { createStudent, deactivateStudent, updateStudent } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { CreateForm } from '@/components/admin/CreateForm';
+import { EditStudentButton } from '@/components/admin/EditStudentButton';
 
 export default async function AlunosPage() {
   const [students, { institutions, courses }] = await Promise.all([listStudents(), listOptionsForForms()]);
@@ -40,8 +41,8 @@ export default async function AlunosPage() {
         <input name="requiredHours" type="number" defaultValue={0} placeholder="Carga horária exigida" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
       </CreateForm>
       <p className="text-xs text-slate-400">
-        O aluno é cadastrado sem acesso ao sistema ainda — o convite (criação de login) é um fluxo
-        separado, não implementado nesta etapa.
+        O e-mail informado é usado para criar o acesso do aluno — ele deve usar "Esqueci minha senha"
+        na tela de login para definir a senha.
       </p>
 
       <div className="space-y-2">
@@ -54,7 +55,15 @@ export default async function AlunosPage() {
                 {!s.profiles && ' · aguardando convite'}
               </p>
             </div>
-            <DeleteButton action={deactivateStudent.bind(null, s.id)} />
+            <div className="flex items-center gap-1">
+              <EditStudentButton
+                student={s}
+                institutions={institutions}
+                courses={courses}
+                action={updateStudent.bind(null, s.id)}
+              />
+              <DeleteButton action={deactivateStudent.bind(null, s.id)} />
+            </div>
           </div>
         ))}
         {students.length === 0 && <p className="text-sm text-slate-500">Nenhum aluno cadastrado.</p>}

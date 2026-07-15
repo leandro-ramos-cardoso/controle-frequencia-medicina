@@ -9,3 +9,13 @@ export async function getStudentProfileData(profileId: string): Promise<any> {
     .single();
   return data;
 }
+
+export async function getPreceptorProfileData(profileId: string): Promise<any> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('preceptors')
+    .select('crm_number, crm_state, specialty, phone, institutions(name)')
+    .eq('profile_id', profileId)
+    .single();
+  return data;
+}
