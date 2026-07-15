@@ -5,3 +5,8 @@ node_modules/
 .vercel
 *.log
 .DS_Store
+*.tsbuildinfo
+/coverage
+.vscode/
+.idea/
+.claude/settings.local.json
