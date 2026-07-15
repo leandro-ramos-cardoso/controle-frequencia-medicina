@@ -11,12 +11,7 @@ import {
   type UpdatePasswordInput,
 } from '@/lib/validations/auth';
 
-const ROLE_HOME: Record<string, string> = {
-  aluno: '/aluno/dashboard',
-  preceptor: '/preceptor/dashboard',
-  coordenador: '/coordenador/dashboard',
-  administrador: '/admin/dashboard',
-};
+import { ROLE_HOME } from '@/lib/auth/role-home';
 
 export async function signIn(input: LoginInput) {
   const parsed = loginSchema.safeParse(input);
