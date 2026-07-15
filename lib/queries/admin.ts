@@ -59,7 +59,9 @@ export async function listPreceptors(): Promise<any[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('preceptors')
-    .select('id, full_name, crm_number, crm_state, specialty, active, institutions(name)')
+    .select(
+      'id, full_name, crm_number, crm_state, specialty, phone, email, active, institution_id, institutions(name)'
+    )
     .is('deleted_at', null)
     .order('full_name');
   return (data ?? []) as any[];

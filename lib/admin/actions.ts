@@ -10,6 +10,7 @@ import {
   preceptorSchema,
   studentSchema,
   internshipSchema,
+  systemSettingSchema,
 } from '@/lib/validations/admin';
 
 type ActionResult = { success: true } | { success: false; error: string };
@@ -113,7 +114,45 @@ export async function deactivateLocation(id: string): Promise<ActionResult> {
   return { success: true };
 }
 
+// Cria o acesso do usuário no Supabase Auth (Admin API, service_role) +
+// o profile vinculado, para que o e-mail informado no cadastro possa ser
+// usado na tela de "recuperar senha" (o usuário define a senha por lá).
+async function createAuthProfile(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string,
+  fullName: string,
+  role: 'aluno' | 'preceptor',
+  password?: string
+): Promise<{ profileId: string } | { error: string }> {
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    ...(password ? { password } : {}),
+  });
+  if (error || !data.user) {
+    const alreadyExists = error?.message?.toLowerCase().includes('already');
+    return {
+      error: alreadyExists
+        ? 'Já existe um usuário cadastrado com este e-mail.'
+        : 'Não foi possível criar o acesso (verifique o e-mail).',
+    };
+  }
+
+  const profileId = data.user.id;
+  const { error: profileError } = await admin
+    .from('profiles')
+    .insert({ id: profileId, full_name: fullName, email, role });
+  if (profileError) {
+    await admin.auth.admin.deleteUser(profileId);
+    return { error: 'Não foi possível criar o perfil.' };
+  }
+
+  return { profileId };
+}
+
 // ============ Preceptores ============
+// O cadastro cria o acesso do preceptor no Supabase Auth já no momento do
+// cadastro (ver createAuthProfile) — o e-mail é obrigatório por isso.
 
 export async function createPreceptor(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
@@ -125,21 +164,87 @@ export async function createPreceptor(formData: FormData): Promise<ActionResult>
     crmNumber: formData.get('crmNumber'),
     crmState: formData.get('crmState'),
     specialty: formData.get('specialty') || undefined,
-    email: formData.get('email') || undefined,
+    email: formData.get('email'),
     phone: formData.get('phone') || undefined,
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
+  const admin = createAdminClient();
+  const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'preceptor');
+  if ('error' in authResult) return { success: false, error: authResult.error };
+
   const { error } = await ctx.supabase.from('preceptors').insert({
+    profile_id: authResult.profileId,
     institution_id: parsed.data.institutionId,
     full_name: parsed.data.fullName,
     crm_number: parsed.data.crmNumber,
     crm_state: parsed.data.crmState.toUpperCase(),
     specialty: parsed.data.specialty || null,
-    email: parsed.data.email || null,
+    email: parsed.data.email,
     phone: parsed.data.phone || null,
   });
-  if (error) return { success: false, error: 'Não foi possível cadastrar o preceptor (verifique o CRM/UF).' };
+  if (error) {
+    await admin.from('profiles').delete().eq('id', authResult.profileId);
+    await admin.auth.admin.deleteUser(authResult.profileId);
+    return { success: false, error: 'Não foi possível cadastrar o preceptor (verifique o CRM/UF).' };
+  }
+
+  revalidatePath('/admin/cadastros/preceptores');
+  return { success: true };
+}
+
+export async function updatePreceptor(id: string, formData: FormData): Promise<ActionResult> {
+  const ctx = await getAdminContext();
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
+
+  const parsed = preceptorSchema.safeParse({
+    institutionId: formData.get('institutionId'),
+    fullName: formData.get('fullName'),
+    crmNumber: formData.get('crmNumber'),
+    crmState: formData.get('crmState'),
+    specialty: formData.get('specialty') || undefined,
+    email: formData.get('email'),
+    phone: formData.get('phone') || undefined,
+  });
+  if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
+
+  const { data: preceptor, error: fetchError } = await ctx.supabase
+    .from('preceptors')
+    .select('id, profile_id')
+    .eq('id', id)
+    .single();
+  if (fetchError || !preceptor) return { success: false, error: 'Preceptor não encontrado.' };
+
+  const admin = createAdminClient();
+  let profileId = preceptor.profile_id as string | null;
+
+  if (profileId) {
+    const { error: authError } = await admin.auth.admin.updateUserById(profileId, { email: parsed.data.email });
+    if (authError) return { success: false, error: 'Não foi possível atualizar o e-mail de acesso (já em uso?).' };
+    await admin
+      .from('profiles')
+      .update({ full_name: parsed.data.fullName, email: parsed.data.email })
+      .eq('id', profileId);
+  } else {
+    const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'preceptor');
+    if ('error' in authResult) return { success: false, error: authResult.error };
+    profileId = authResult.profileId;
+  }
+
+  const { error } = await ctx.supabase
+    .from('preceptors')
+    .update({
+      profile_id: profileId,
+      institution_id: parsed.data.institutionId,
+      full_name: parsed.data.fullName,
+      crm_number: parsed.data.crmNumber,
+      crm_state: parsed.data.crmState.toUpperCase(),
+      specialty: parsed.data.specialty || null,
+      email: parsed.data.email,
+      phone: parsed.data.phone || null,
+    })
+    .eq('id', id);
+  if (error) return { success: false, error: 'Não foi possível atualizar o preceptor (verifique o CRM/UF).' };
 
   revalidatePath('/admin/cadastros/preceptores');
   return { success: true };
@@ -157,37 +262,10 @@ export async function deactivatePreceptor(id: string): Promise<ActionResult> {
 }
 
 // ============ Alunos ============
-// O cadastro cria o acesso do aluno no Supabase Auth (via Admin API,
-// service_role) já no momento do cadastro, para que o e-mail informado
-// possa ser usado na tela de "recuperar senha" e o aluno defina sua senha.
-
-async function createAuthProfile(
-  admin: ReturnType<typeof createAdminClient>,
-  email: string,
-  fullName: string,
-  role: 'aluno'
-): Promise<{ profileId: string } | { error: string }> {
-  const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true });
-  if (error || !data.user) {
-    const alreadyExists = error?.message?.toLowerCase().includes('already');
-    return {
-      error: alreadyExists
-        ? 'Já existe um usuário cadastrado com este e-mail.'
-        : 'Não foi possível criar o acesso do aluno (verifique o e-mail).',
-    };
-  }
-
-  const profileId = data.user.id;
-  const { error: profileError } = await admin
-    .from('profiles')
-    .insert({ id: profileId, full_name: fullName, email, role });
-  if (profileError) {
-    await admin.auth.admin.deleteUser(profileId);
-    return { error: 'Não foi possível criar o perfil do aluno.' };
-  }
-
-  return { profileId };
-}
+// O cadastro cria o acesso do aluno no Supabase Auth (ver createAuthProfile)
+// já no momento do cadastro, para que o e-mail informado possa ser usado
+// na tela de "recuperar senha" e o aluno defina sua senha. O admin também
+// pode definir a senha diretamente no formulário, para o aluno já acessar.
 
 export async function createStudent(formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
@@ -200,11 +278,18 @@ export async function createStudent(formData: FormData): Promise<ActionResult> {
     email: formData.get('email'),
     registrationNumber: formData.get('registrationNumber'),
     requiredHours: formData.get('requiredHours') || undefined,
+    password: formData.get('password') || undefined,
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
   const admin = createAdminClient();
-  const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'aluno');
+  const authResult = await createAuthProfile(
+    admin,
+    parsed.data.email,
+    parsed.data.fullName,
+    'aluno',
+    parsed.data.password || undefined
+  );
   if ('error' in authResult) return { success: false, error: authResult.error };
 
   const { error } = await ctx.supabase.from('students').insert({
@@ -337,6 +422,37 @@ export async function deactivateInternship(id: string): Promise<ActionResult> {
 
 // ============ Configurações do sistema ============
 
+function parseSettingValue(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw; // valor simples (texto/número não-JSON) é salvo como string
+  }
+}
+
+export async function createSystemSetting(formData: FormData): Promise<ActionResult> {
+  const ctx = await getAdminContext();
+  if ('error' in ctx) return { success: false, error: ctx.error as string };
+
+  const parsed = systemSettingSchema.safeParse({
+    key: formData.get('key'),
+    value: formData.get('value'),
+    description: formData.get('description') || undefined,
+  });
+  if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
+
+  const { error } = await ctx.supabase.from('system_settings').insert({
+    key: parsed.data.key,
+    value: parseSettingValue(parsed.data.value),
+    description: parsed.data.description || null,
+    updated_by: ctx.profile.id,
+  });
+  if (error) return { success: false, error: 'Não foi possível criar a configuração (chave já existe?).' };
+
+  revalidatePath('/admin/configuracoes');
+  return { success: true };
+}
+
 export async function updateSystemSetting(key: string, formData: FormData): Promise<ActionResult> {
   const ctx = await getAdminContext();
   if ('error' in ctx) return { success: false, error: ctx.error as string };
@@ -346,16 +462,9 @@ export async function updateSystemSetting(key: string, formData: FormData): Prom
     return { success: false, error: 'Informe um valor.' };
   }
 
-  let value: unknown = rawValue;
-  try {
-    value = JSON.parse(rawValue);
-  } catch {
-    // valor simples (texto/número não-JSON) é salvo como string
-  }
-
   const { error } = await ctx.supabase
     .from('system_settings')
-    .update({ value, updated_by: ctx.profile.id })
+    .update({ value: parseSettingValue(rawValue), updated_by: ctx.profile.id })
     .eq('key', key);
   if (error) return { success: false, error: 'Não foi possível salvar a configuração.' };
 

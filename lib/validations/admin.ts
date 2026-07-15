@@ -26,7 +26,7 @@ export const preceptorSchema = z.object({
   crmNumber: z.string().min(1, 'Informe o CRM'),
   crmState: z.string().length(2, 'UF com 2 letras'),
   specialty: z.string().optional(),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.string().email('E-mail inválido'),
   phone: z.string().optional(),
 });
 
@@ -37,6 +37,16 @@ export const studentSchema = z.object({
   email: z.string().email('E-mail inválido'),
   registrationNumber: z.string().min(1, 'Informe a matrícula'),
   requiredHours: z.coerce.number().nonnegative().default(0),
+  password: z.string().min(6, 'A senha precisa ter ao menos 6 caracteres').optional().or(z.literal('')),
+});
+
+export const systemSettingSchema = z.object({
+  key: z
+    .string()
+    .min(1, 'Informe a chave')
+    .regex(/^[a-z0-9_]+$/, 'Use apenas letras minúsculas, números e underscore'),
+  value: z.string().min(1, 'Informe o valor'),
+  description: z.string().optional(),
 });
 
 export const internshipSchema = z.object({

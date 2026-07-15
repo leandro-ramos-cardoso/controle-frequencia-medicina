@@ -1,7 +1,8 @@
 import { listPreceptors, listOptionsForForms } from '@/lib/queries/admin';
-import { createPreceptor, deactivatePreceptor } from '@/lib/admin/actions';
+import { createPreceptor, deactivatePreceptor, updatePreceptor } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { CreateForm } from '@/components/admin/CreateForm';
+import { EditPreceptorButton } from '@/components/admin/EditPreceptorButton';
 
 export default async function PreceptoresPage() {
   const [preceptors, { institutions }] = await Promise.all([listPreceptors(), listOptionsForForms()]);
@@ -26,8 +27,12 @@ export default async function PreceptoresPage() {
         <input name="crmState" required maxLength={2} placeholder="UF *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="specialty" placeholder="Especialidade" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="phone" placeholder="Telefone" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input name="email" type="email" placeholder="E-mail" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+        <input name="email" type="email" required placeholder="E-mail *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
       </CreateForm>
+      <p className="text-xs text-slate-400">
+        O e-mail informado é usado para criar o acesso do preceptor — ele deve usar "Esqueci minha
+        senha" na tela de login para definir a senha.
+      </p>
 
       <div className="space-y-2">
         {preceptors.map((p) => (
@@ -39,7 +44,10 @@ export default async function PreceptoresPage() {
                 {!p.active && ' · inativo'}
               </p>
             </div>
-            <DeleteButton action={deactivatePreceptor.bind(null, p.id)} confirmMessage="Inativar este preceptor?" />
+            <div className="flex items-center gap-1">
+              <EditPreceptorButton preceptor={p} institutions={institutions} action={updatePreceptor.bind(null, p.id)} />
+              <DeleteButton action={deactivatePreceptor.bind(null, p.id)} confirmMessage="Inativar este preceptor?" />
+            </div>
           </div>
         ))}
         {preceptors.length === 0 && <p className="text-sm text-slate-500">Nenhum preceptor cadastrado.</p>}

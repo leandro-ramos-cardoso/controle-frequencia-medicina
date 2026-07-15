@@ -38,11 +38,18 @@ export default async function AlunosPage() {
         <input name="fullName" required placeholder="Nome completo *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
         <input name="registrationNumber" required placeholder="Matrícula *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="email" type="email" required placeholder="E-mail *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input name="requiredHours" type="number" defaultValue={0} placeholder="Carga horária exigida" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+        <input name="requiredHours" type="number" placeholder="Carga horária exigida" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+        <input
+          name="password"
+          type="password"
+          minLength={6}
+          placeholder="Senha de acesso (opcional)"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+        />
       </CreateForm>
       <p className="text-xs text-slate-400">
-        O e-mail informado é usado para criar o acesso do aluno — ele deve usar "Esqueci minha senha"
-        na tela de login para definir a senha.
+        Se a senha não for definida, o aluno usa "Esqueci minha senha" na tela de login com o e-mail
+        cadastrado para criar a própria senha.
       </p>
 
       <div className="space-y-2">
