@@ -1,6 +1,7 @@
 import { listInternships, listOptionsForForms } from '@/lib/queries/admin';
 import { createInternship, deactivateInternship } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { CreateForm } from '@/components/admin/CreateForm';
 import { formatDate } from '@/lib/format';
 
 export default async function EstagiosPage() {
@@ -10,7 +11,11 @@ export default async function EstagiosPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Estágios</h1>
 
-      <form action={async (formData: FormData) => { await createInternship(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <CreateForm
+        action={createInternship}
+        submitLabel="Cadastrar estágio"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2"
+      >
         <select name="institutionId" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
           <option value="">Instituição *</option>
           {institutions.map((i) => (
@@ -29,10 +34,7 @@ export default async function EstagiosPage() {
         <input name="endDate" type="date" required className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="requiredHours" type="number" defaultValue={0} placeholder="Carga horária" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <textarea name="description" placeholder="Descrição" rows={2} className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white sm:col-span-2">
-          Cadastrar estágio
-        </button>
-      </form>
+      </CreateForm>
 
       <div className="space-y-2">
         {internships.map((i) => (

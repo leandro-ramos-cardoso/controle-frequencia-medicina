@@ -47,16 +47,24 @@ export function AprovacoesClient({
 
   async function handleApproveRecord(id: string) {
     setBusyId(id);
-    await approveAttendanceRecord(id);
+    const result = await approveAttendanceRecord(id);
     setBusyId(null);
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
     router.refresh();
   }
 
   async function handleBulkApprove() {
     setBusyId('bulk');
-    await bulkApproveRecords(Array.from(selected));
-    setSelected(new Set());
+    const result = await bulkApproveRecords(Array.from(selected));
     setBusyId(null);
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
+    setSelected(new Set());
     router.refresh();
   }
 
@@ -64,15 +72,18 @@ export function AprovacoesClient({
     if (!rejectTarget) return;
     setRejectSubmitting(true);
 
-    if (rejectTarget.kind === 'record') {
-      await rejectAttendanceRecord(rejectTarget.id, reason);
-    } else if (rejectTarget.kind === 'adjustment') {
-      await reviewAdjustment(rejectTarget.id, rejectTarget.nextStatus, reason);
-    } else {
-      await reviewJustification(rejectTarget.id, rejectTarget.nextStatus, reason);
-    }
+    const result =
+      rejectTarget.kind === 'record'
+        ? await rejectAttendanceRecord(rejectTarget.id, reason)
+        : rejectTarget.kind === 'adjustment'
+          ? await reviewAdjustment(rejectTarget.id, rejectTarget.nextStatus, reason)
+          : await reviewJustification(rejectTarget.id, rejectTarget.nextStatus, reason);
 
     setRejectSubmitting(false);
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
     setRejectTarget(null);
     router.refresh();
   }
@@ -147,8 +158,12 @@ export function AprovacoesClient({
                 busy={busyId === adj.id}
                 onApprove={async () => {
                   setBusyId(adj.id);
-                  await reviewAdjustment(adj.id, 'aprovada');
+                  const result = await reviewAdjustment(adj.id, 'aprovada');
                   setBusyId(null);
+                  if (!result.success) {
+                    alert(result.error);
+                    return;
+                  }
                   router.refresh();
                 }}
                 onRequestCorrection={() => setRejectTarget({ kind: 'adjustment', id: adj.id, nextStatus: 'necessita_correcao' })}
@@ -175,8 +190,12 @@ export function AprovacoesClient({
                 busy={busyId === j.id}
                 onApprove={async () => {
                   setBusyId(j.id);
-                  await reviewJustification(j.id, 'aprovada');
+                  const result = await reviewJustification(j.id, 'aprovada');
                   setBusyId(null);
+                  if (!result.success) {
+                    alert(result.error);
+                    return;
+                  }
                   router.refresh();
                 }}
                 onRequestCorrection={() => setRejectTarget({ kind: 'justification', id: j.id, nextStatus: 'necessita_correcao' })}

@@ -1,6 +1,7 @@
 import { listInstitutions } from '@/lib/queries/admin';
 import { createInstitution, deactivateInstitution } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { CreateForm } from '@/components/admin/CreateForm';
 
 export default async function InstituicoesPage() {
   const institutions = await listInstitutions();
@@ -9,17 +10,18 @@ export default async function InstituicoesPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Instituições</h1>
 
-      <form action={async (formData: FormData) => { await createInstitution(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <CreateForm
+        action={createInstitution}
+        submitLabel="Cadastrar instituição"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2"
+      >
         <input name="name" required placeholder="Nome *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
         <input name="cnpj" placeholder="CNPJ" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="responsibleName" placeholder="Responsável" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="phone" placeholder="Telefone" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="email" type="email" placeholder="E-mail" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="address" placeholder="Endereço" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white sm:col-span-2">
-          Cadastrar instituição
-        </button>
-      </form>
+      </CreateForm>
 
       <div className="space-y-2">
         {institutions.map((inst) => (

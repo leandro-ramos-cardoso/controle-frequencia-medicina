@@ -1,6 +1,7 @@
 import { listPreceptors, listOptionsForForms } from '@/lib/queries/admin';
 import { createPreceptor, deactivatePreceptor } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { CreateForm } from '@/components/admin/CreateForm';
 
 export default async function PreceptoresPage() {
   const [preceptors, { institutions }] = await Promise.all([listPreceptors(), listOptionsForForms()]);
@@ -9,7 +10,11 @@ export default async function PreceptoresPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Preceptores</h1>
 
-      <form action={async (formData: FormData) => { await createPreceptor(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <CreateForm
+        action={createPreceptor}
+        submitLabel="Cadastrar preceptor"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2"
+      >
         <select name="institutionId" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2">
           <option value="">Instituição *</option>
           {institutions.map((i) => (
@@ -22,10 +27,7 @@ export default async function PreceptoresPage() {
         <input name="specialty" placeholder="Especialidade" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="phone" placeholder="Telefone" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="email" type="email" placeholder="E-mail" className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white sm:col-span-2">
-          Cadastrar preceptor
-        </button>
-      </form>
+      </CreateForm>
 
       <div className="space-y-2">
         {preceptors.map((p) => (

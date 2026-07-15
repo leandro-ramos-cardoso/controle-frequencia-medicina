@@ -1,6 +1,7 @@
 import { listLocations, listOptionsForForms } from '@/lib/queries/admin';
 import { createLocation, deactivateLocation } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { CreateForm } from '@/components/admin/CreateForm';
 
 export default async function LocaisPage() {
   const [locations, { institutions }] = await Promise.all([listLocations(), listOptionsForForms()]);
@@ -9,7 +10,11 @@ export default async function LocaisPage() {
     <div className="space-y-6">
       <h1 className="text-lg font-semibold text-slate-900">Locais de estágio</h1>
 
-      <form action={async (formData: FormData) => { await createLocation(formData); }} className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2">
+      <CreateForm
+        action={createLocation}
+        submitLabel="Cadastrar local"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:grid-cols-2"
+      >
         <select name="institutionId" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2">
           <option value="">Instituição *</option>
           {institutions.map((i) => (
@@ -23,10 +28,7 @@ export default async function LocaisPage() {
         <input name="longitude" type="number" step="any" required placeholder="Longitude *" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="allowedRadiusMeters" type="number" defaultValue={100} placeholder="Raio permitido (m)" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input name="warningRadiusMeters" type="number" defaultValue={150} placeholder="Raio de atenção (m)" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white sm:col-span-2">
-          Cadastrar local
-        </button>
-      </form>
+      </CreateForm>
 
       <div className="space-y-2">
         {locations.map((loc) => (
