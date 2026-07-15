@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import type { AttendanceRecord, RecordType, ValidationStatus } from '@/types/attendance';
+import { formatDateKey } from '@/lib/format';
 
 export type HistoryFilters = {
   startDate?: string; // yyyy-mm-dd
@@ -44,7 +45,7 @@ export function groupRecordsByDay(records: AttendanceRecord[]): DayGroup[] {
   const byDay = new Map<string, AttendanceRecord[]>();
 
   for (const record of records) {
-    const day = new Date(record.server_recorded_at).toISOString().slice(0, 10);
+    const day = formatDateKey(record.server_recorded_at);
     if (!byDay.has(day)) byDay.set(day, []);
     byDay.get(day)!.push(record);
   }

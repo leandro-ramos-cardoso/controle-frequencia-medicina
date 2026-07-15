@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { DayGroup } from '@/lib/queries/history';
+import { formatWeekdayDayMonth, formatTime } from '@/lib/format';
 
 const TYPE_LABEL: Record<string, string> = {
   entrada: 'Entrada',
@@ -26,11 +27,7 @@ const STATUS_DOT: Record<string, string> = {
 export function DaySummaryCard({ day }: { day: DayGroup }) {
   const hours = Math.floor(day.totalMinutes / 60);
   const minutes = day.totalMinutes % 60;
-  const dateLabel = new Date(`${day.date}T00:00:00`).toLocaleDateString('pt-BR', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-  });
+  const dateLabel = formatWeekdayDayMonth(`${day.date}T12:00:00`);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
@@ -52,12 +49,7 @@ export function DaySummaryCard({ day }: { day: DayGroup }) {
                 <span className={`h-2 w-2 rounded-full ${STATUS_DOT[record.validation_status]}`} />
                 {TYPE_LABEL[record.record_type]}
               </span>
-              <span className="text-slate-400">
-                {new Date(record.server_recorded_at).toLocaleTimeString('pt-BR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
+              <span className="text-slate-400">{formatTime(record.server_recorded_at)}</span>
             </Link>
           </li>
         ))}

@@ -3,9 +3,10 @@
 import { FileText, FileSpreadsheet, FileDown } from 'lucide-react';
 import type { FrequencyReportRow } from '@/lib/queries/reports';
 import { exportFrequencyToCsv, exportFrequencyToXlsx, exportFrequencyToPdf } from '@/lib/reports/export';
+import { formatDateTime } from '@/lib/format';
 
 export function ExportButtons({ data }: { data: FrequencyReportRow[] }) {
-  const generatedAt = new Date().toLocaleString('pt-BR');
+  const generatedAt = formatDateTime(new Date());
 
   return (
     <div className="flex flex-wrap gap-2">

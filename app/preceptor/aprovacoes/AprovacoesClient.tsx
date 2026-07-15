@@ -12,6 +12,7 @@ import {
 import { PendingRecordCard } from '@/components/preceptor/PendingRecordCard';
 import { PendingRequestCard } from '@/components/preceptor/PendingRequestCard';
 import { RejectModal } from '@/components/preceptor/RejectModal';
+import { formatDate } from '@/lib/format';
 
 type Tab = 'pontos' | 'ajustes' | 'justificativas';
 
@@ -140,7 +141,7 @@ export function AprovacoesClient({
                 key={adj.id}
                 studentName={adj.students?.profiles?.full_name ?? ''}
                 registrationNumber={adj.students?.registration_number ?? ''}
-                summary={`Ajuste — ${new Date(adj.requested_date).toLocaleDateString('pt-BR')}`}
+                summary={`Ajuste — ${formatDate(adj.requested_date)}`}
                 reason={adj.reason}
                 description={adj.description}
                 busy={busyId === adj.id}
@@ -168,7 +169,7 @@ export function AprovacoesClient({
                 key={j.id}
                 studentName={j.students?.profiles?.full_name ?? ''}
                 registrationNumber={j.students?.registration_number ?? ''}
-                summary={`Ausência — ${new Date(j.absence_start).toLocaleDateString('pt-BR')} a ${new Date(j.absence_end).toLocaleDateString('pt-BR')}`}
+                summary={`Ausência — ${formatDate(j.absence_start)} a ${formatDate(j.absence_end)}`}
                 reason={j.reason}
                 description={j.description}
                 busy={busyId === j.id}

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { calculateCompletedHours } from '@/lib/attendance/hours';
 import type { AttendanceRecord } from '@/types/attendance';
+import { formatDayMonth } from '@/lib/format';
 
 export type FrequencyReportFilters = {
   internshipId?: string;
@@ -105,7 +106,7 @@ export async function getRecordsByDayChart(filters: FrequencyReportFilters): Pro
   const { data } = await query;
   const byDay = new Map<string, number>();
   for (const r of data ?? []) {
-    const day = new Date(r.server_recorded_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const day = formatDayMonth(r.server_recorded_at);
     byDay.set(day, (byDay.get(day) ?? 0) + 1);
   }
   return Array.from(byDay.entries()).map(([label, value]) => ({ label, value }));

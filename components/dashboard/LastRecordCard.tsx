@@ -1,4 +1,5 @@
 import type { AttendanceRecord } from '@/types/attendance';
+import { formatDate, formatTime } from '@/lib/format';
 
 const TYPE_LABEL: Record<string, string> = {
   entrada: 'Entrada',
@@ -32,11 +33,8 @@ export function LastRecordCard({ record }: { record: AttendanceRecord | null }) 
   }
 
   const status = STATUS_LABEL[record.validation_status];
-  const time = new Date(record.server_recorded_at).toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const date = new Date(record.server_recorded_at).toLocaleDateString('pt-BR');
+  const time = formatTime(record.server_recorded_at);
+  const date = formatDate(record.server_recorded_at);
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">

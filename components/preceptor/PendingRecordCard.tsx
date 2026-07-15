@@ -1,5 +1,7 @@
 'use client';
 
+import { formatDateTime } from '@/lib/format';
+
 const TYPE_LABEL: Record<string, string> = {
   entrada: 'Entrada',
   saida: 'Saída',
@@ -48,8 +50,7 @@ export function PendingRecordCard({
           {record.students?.profiles?.full_name} · {TYPE_LABEL[record.record_type]}
         </p>
         <p className="text-xs text-slate-400">
-          {record.students?.registration_number} ·{' '}
-          {new Date(record.server_recorded_at).toLocaleString('pt-BR')}
+          {record.students?.registration_number} · {formatDateTime(record.server_recorded_at)}
           {record.distance_meters !== null ? ` · ${record.distance_meters}m` : ''}
         </p>
         {record.location_status === 'fora_do_raio' && (

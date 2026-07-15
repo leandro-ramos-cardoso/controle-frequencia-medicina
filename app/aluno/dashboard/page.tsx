@@ -68,8 +68,18 @@ export default async function AlunoDashboardPage() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-slate-700">Último registro</h2>
-        <LastRecordCard record={data.lastRecord} />
+        <h2 className="mb-2 text-sm font-semibold text-slate-700">Últimos registros</h2>
+        {data.recentRecords.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-card">
+            Nenhum registro encontrado ainda.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {data.recentRecords.map((record) => (
+              <LastRecordCard key={record.id} record={record} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

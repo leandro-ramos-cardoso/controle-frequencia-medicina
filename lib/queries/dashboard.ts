@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { calculateCompletedHours } from '@/lib/attendance/hours';
 import { getNextAction } from '@/lib/attendance/next-action';
+import { formatDateKey } from '@/lib/format';
 import type { AttendanceRecord } from '@/types/attendance';
 
 export type StudentDashboardData = {
@@ -19,7 +20,7 @@ export type StudentDashboardData = {
   } | null;
   hoursCompleted: number;
   hoursRemaining: number;
-  lastRecord: AttendanceRecord | null;
+  recentRecords: AttendanceRecord[];
   pendingRecordsCount: number;
   openRequestsCount: number;
   nextAction: ReturnType<typeof getNextAction>;
@@ -71,8 +72,8 @@ export async function getStudentDashboardData(profileId: string): Promise<Studen
 
   const records = (recordsData ?? []) as AttendanceRecord[];
 
-  const today = new Date().toDateString();
-  const todaysRecords = records.filter((r) => new Date(r.server_recorded_at).toDateString() === today);
+  const today = formatDateKey(new Date());
+  const todaysRecords = records.filter((r) => formatDateKey(r.server_recorded_at) === today);
   const lastRecordToday = todaysRecords[0] ?? null;
 
   const { count: pendingRecordsCount } = internshipId
@@ -121,7 +122,7 @@ export async function getStudentDashboardData(profileId: string): Promise<Studen
       : null,
     hoursCompleted,
     hoursRemaining: Math.max(requiredHours - hoursCompleted, 0),
-    lastRecord: records[0] ?? null,
+    recentRecords: records.slice(0, 5),
     pendingRecordsCount: pendingRecordsCount ?? 0,
     openRequestsCount: (pendingAdjustments ?? 0) + (pendingJustifications ?? 0),
     nextAction: getNextAction({ lastRecordToday, isWithinSchedule }),

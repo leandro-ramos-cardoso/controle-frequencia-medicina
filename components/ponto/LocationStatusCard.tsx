@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import { RefreshCw, MapPin } from 'lucide-react';
 import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
+import { formatDate, formatTime } from '@/lib/format';
 
 // Leaflet acessa `window`/`document` — precisa ser carregado só no client.
 const LocationMap = dynamic(() => import('./LocationMap').then((m) => m.LocationMap), {
@@ -75,9 +76,9 @@ export function LocationStatusCard({
         <dt className="text-slate-400">Precisão</dt>
         <dd>{geo.accuracyMeters?.toFixed(2)} m</dd>
         <dt className="text-slate-400">Data</dt>
-        <dd>{new Date().toLocaleDateString('pt-BR')}</dd>
+        <dd>{formatDate(new Date())}</dd>
         <dt className="text-slate-400">Hora</dt>
-        <dd>{new Date().toLocaleTimeString('pt-BR')}</dd>
+        <dd>{formatTime(new Date())}</dd>
       </dl>
 
       <button

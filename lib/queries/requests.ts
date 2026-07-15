@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 export type RequestListItem = {
   id: string;
@@ -29,7 +30,7 @@ export async function getRecentRecordOptions(profileId: string) {
 
   return (data ?? []).map((r) => ({
     id: r.id,
-    label: `${TYPE_LABEL[r.record_type] ?? r.record_type} — ${new Date(r.server_recorded_at).toLocaleString('pt-BR')}`,
+    label: `${TYPE_LABEL[r.record_type] ?? r.record_type} — ${formatDateTime(r.server_recorded_at)}`,
   }));
 }
 
@@ -58,16 +59,14 @@ export async function getStudentRequests(profileId: string): Promise<RequestList
       kind: 'ajuste' as const,
       status: a.status,
       createdAt: a.created_at,
-      summary: `Ajuste de ponto — ${new Date(a.requested_date).toLocaleDateString('pt-BR')}`,
+      summary: `Ajuste de ponto — ${formatDate(a.requested_date)}`,
     })),
     ...(justifications ?? []).map((j) => ({
       id: j.id,
       kind: 'justificativa' as const,
       status: j.status,
       createdAt: j.created_at,
-      summary: `Ausência — ${new Date(j.absence_start).toLocaleDateString('pt-BR')} a ${new Date(
-        j.absence_end
-      ).toLocaleDateString('pt-BR')}`,
+      summary: `Ausência — ${formatDate(j.absence_start)} a ${formatDate(j.absence_end)}`,
     })),
   ];
 

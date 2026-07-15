@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { getCurrentProfile } from '@/lib/auth/get-profile';
 import { getStudentRequests } from '@/lib/queries/requests';
 import { RequestStatusBadge } from '@/components/solicitacoes/RequestStatusBadge';
+import { formatDate } from '@/lib/format';
 
 export default async function SolicitacoesPage() {
   const profile = await getCurrentProfile();
@@ -46,7 +47,7 @@ export default async function SolicitacoesPage() {
                 <p className="truncate text-sm font-medium text-slate-900">{r.summary}</p>
                 <p className="truncate text-xs text-slate-400">
                   {r.kind === 'ajuste' ? 'Ajuste de ponto' : 'Justificativa de ausência'} ·{' '}
-                  {new Date(r.createdAt).toLocaleDateString('pt-BR')}
+                  {formatDate(r.createdAt)}
                 </p>
               </div>
               <span className="shrink-0"><RequestStatusBadge status={r.status} /></span>

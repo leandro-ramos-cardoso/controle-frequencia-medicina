@@ -1,6 +1,7 @@
 import { listInternships, listOptionsForForms } from '@/lib/queries/admin';
 import { createInternship, deactivateInternship } from '@/lib/admin/actions';
 import { DeleteButton } from '@/components/admin/DeleteButton';
+import { formatDate } from '@/lib/format';
 
 export default async function EstagiosPage() {
   const [internships, { institutions, courses }] = await Promise.all([listInternships(), listOptionsForForms()]);
@@ -40,7 +41,7 @@ export default async function EstagiosPage() {
               <p className="truncate text-sm font-medium text-slate-900">{i.name} <span className="text-slate-400">({i.code})</span></p>
               <p className="truncate text-xs text-slate-400">
                 {i.institutions?.name} · {i.courses?.name} ·{' '}
-                {new Date(i.start_date).toLocaleDateString('pt-BR')} a {new Date(i.end_date).toLocaleDateString('pt-BR')}
+                {formatDate(i.start_date)} a {formatDate(i.end_date)}
               </p>
             </div>
             <DeleteButton action={deactivateInternship.bind(null, i.id)} />

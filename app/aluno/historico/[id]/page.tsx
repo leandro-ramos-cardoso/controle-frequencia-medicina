@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getAttendanceRecordDetail } from '@/lib/queries/attendance-detail';
+import { formatDate, formatTime, formatDateTime } from '@/lib/format';
 
 const TYPE_LABEL: Record<string, string> = {
   entrada: 'Entrada',
@@ -71,8 +72,8 @@ export default async function DetalheRegistroPage({ params }: { params: Promise<
               : null
           }
         />
-        <Row label="Data" value={new Date(record.server_recorded_at).toLocaleDateString('pt-BR')} />
-        <Row label="Horário" value={new Date(record.server_recorded_at).toLocaleTimeString('pt-BR')} />
+        <Row label="Data" value={formatDate(record.server_recorded_at)} />
+        <Row label="Horário" value={formatTime(record.server_recorded_at)} />
         <Row label="Coordenadas" value={record.latitude && record.longitude ? `${record.latitude}, ${record.longitude}` : null} />
         <Row label="Precisão" value={record.accuracy_meters ? `${record.accuracy_meters} m` : null} />
         <Row label="Distância do local" value={record.distance_meters !== null ? `${record.distance_meters} m` : null} />
@@ -82,7 +83,7 @@ export default async function DetalheRegistroPage({ params }: { params: Promise<
         <Row label="Aprovado por" value={record.approver?.full_name} />
         <Row
           label="Data da aprovação"
-          value={record.approved_at ? new Date(record.approved_at).toLocaleString('pt-BR') : null}
+          value={record.approved_at ? formatDateTime(record.approved_at) : null}
         />
         {record.rejection_reason && <Row label="Motivo da recusa" value={record.rejection_reason} />}
       </div>

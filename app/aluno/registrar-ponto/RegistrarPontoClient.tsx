@@ -8,6 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { reverseGeocode } from '@/lib/geolocation/reverse-geocode';
 import { registerAttendance } from '@/lib/attendance/actions';
 import { queueAttendance } from '@/lib/offline/queue';
+import { formatTime } from '@/lib/format';
 import { LocationStatusCard } from '@/components/ponto/LocationStatusCard';
 import { ConfirmPointModal } from '@/components/ponto/ConfirmPointModal';
 import type { PointRegistrationContext } from '@/lib/queries/point-registration';
@@ -76,7 +77,7 @@ export function RegistrarPontoClient({
       }
 
       setModalOpen(false);
-      setSuccess({ protocol: result.protocol, time: new Date().toLocaleTimeString('pt-BR') });
+      setSuccess({ protocol: result.protocol, time: formatTime(new Date()) });
     } catch {
       // Falha de rede no meio do envio (não um erro de validação) — enfileira em vez de perder o registro.
       await queueAttendance(input);

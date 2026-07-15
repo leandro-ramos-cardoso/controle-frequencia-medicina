@@ -1,3 +1,5 @@
+import { formatTime } from '@/lib/format';
+
 const SITUACAO_TEXT: Record<string, { label: string; className: string }> = {
   presente: { label: 'Presente', className: 'bg-emerald-50 text-emerald-700' },
   ausente: { label: 'Concluiu o dia', className: 'bg-slate-100 text-slate-600' },
@@ -43,7 +45,7 @@ export function StudentRow({
         <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.className}`}>{status.label}</span>
         {lastRecordTime && (
           <p className="mt-1 text-xs text-slate-400">
-            {new Date(lastRecordTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {formatTime(lastRecordTime)}
             {distanceMeters !== null ? ` · ${distanceMeters}m` : ''}
           </p>
         )}
