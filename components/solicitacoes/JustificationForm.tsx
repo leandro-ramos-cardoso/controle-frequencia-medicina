@@ -20,6 +20,7 @@ export function JustificationForm() {
       return;
     }
     router.push('/aluno/solicitacoes');
+    router.refresh();
   }
 
   return (

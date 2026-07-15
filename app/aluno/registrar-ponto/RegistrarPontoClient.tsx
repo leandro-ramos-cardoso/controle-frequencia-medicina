@@ -96,7 +96,7 @@ export function RegistrarPontoClient({
           internet voltar. O horário oficial será confirmado pelo servidor no momento do envio.
         </p>
         <button
-          onClick={() => router.push('/aluno/dashboard')}
+          onClick={() => { router.push('/aluno/dashboard'); router.refresh(); }}
           className="mt-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-medium text-white"
         >
           Voltar ao painel
@@ -113,7 +113,7 @@ export function RegistrarPontoClient({
         <p className="text-sm text-emerald-700">Horário: {success.time}</p>
         <p className="text-xs text-emerald-600">Protocolo {success.protocol}</p>
         <button
-          onClick={() => router.push('/aluno/dashboard')}
+          onClick={() => { router.push('/aluno/dashboard'); router.refresh(); }}
           className="mt-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
         >
           Voltar ao painel

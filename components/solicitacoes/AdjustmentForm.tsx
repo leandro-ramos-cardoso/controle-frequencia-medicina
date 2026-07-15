@@ -32,6 +32,7 @@ export function AdjustmentForm({
       return;
     }
     router.push('/aluno/solicitacoes');
+    router.refresh();
   }
 
   return (
