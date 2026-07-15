@@ -4,6 +4,7 @@ import { formatDateTime } from '@/lib/format';
 const ACTION_LABELS: Record<string, string> = {
   create: 'Criação',
   update: 'Atualização',
+  deactivate: 'Remoção/inativação',
   approve: 'Aprovação',
   reject: 'Recusa',
   'review:aprovada': 'Aprovação',
@@ -15,6 +16,12 @@ const ENTITY_LABELS: Record<string, string> = {
   attendance_records: 'Registro de ponto',
   attendance_adjustments: 'Ajuste de ponto',
   absence_justifications: 'Justificativa de ausência',
+  institutions: 'Instituição',
+  internship_locations: 'Local de estágio',
+  preceptors: 'Preceptor',
+  students: 'Aluno',
+  internships: 'Estágio',
+  system_settings: 'Configuração do sistema',
 };
 
 export default async function AuditoriaPage() {

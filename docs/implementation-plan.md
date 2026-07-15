@@ -30,13 +30,15 @@ seção "Seed de demonstração".
 - **Cadastro de cursos/turmas/períodos acadêmicos:** não existe tela própria;
   hoje só dá para popular `courses`/`classes`/`academic_periods` via SQL direto.
   Os formulários de aluno/estágio dependem de `courses` já ter dados.
-- **Convite de acesso — aluno:** resolvido. `createStudent`/`updateStudent`
+- **Convite de acesso — aluno e preceptor:** resolvido para os dois.
+  `createStudent`/`updateStudent`/`createPreceptor`/`updatePreceptor`
   (`lib/admin/actions.ts`) criam o usuário no Supabase Auth (Admin API,
-  `service_role`) e o `profile` vinculado no momento do cadastro; o aluno
-  usa "Esqueci minha senha" com o e-mail informado para definir a senha.
-- **Convite de acesso — preceptor:** ainda pendente. `preceptors` continua
-  sendo criado sem `profile_id`; seguir o mesmo padrão usado para aluno
-  quando for implementar.
+  `service_role`) e o `profile` vinculado no momento do cadastro; o e-mail
+  informado é obrigatório e usado em "Esqueci minha senha" para definir a
+  senha (o admin também pode definir a senha do aluno direto no cadastro).
+  Falta reconciliação para o caso raro de falha parcial entre a criação do
+  usuário Auth e o insert/update do registro de domínio (não há transação
+  cross-sistema) — ver comentário em `createAuthProfile`.
 - **Gráficos do painel administrativo (item 17 da especificação):** resolvido
   na etapa 13 com `recharts`, implementado em `/admin/relatorios` (não duplicado
   no dashboard).

@@ -28,6 +28,15 @@ function firstIssue(error: { issues: { message: string }[] }) {
   return error.issues[0]?.message ?? 'Dados inválidos.';
 }
 
+async function audit(actorProfileId: string, action: string, entity: string, entityId: string) {
+  try {
+    const admin = createAdminClient();
+    await admin.from('audit_logs').insert({ actor_profile_id: actorProfileId, action, entity, entity_id: entityId });
+  } catch {
+    // auditoria não deve travar a ação principal
+  }
+}
+
 // ============ Instituições ============
 
 export async function createInstitution(formData: FormData): Promise<ActionResult> {
@@ -44,16 +53,21 @@ export async function createInstitution(formData: FormData): Promise<ActionResul
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
-  const { error } = await ctx.supabase.from('institutions').insert({
-    name: parsed.data.name,
-    cnpj: parsed.data.cnpj || null,
-    address: parsed.data.address || null,
-    responsible_name: parsed.data.responsibleName || null,
-    phone: parsed.data.phone || null,
-    email: parsed.data.email || null,
-  });
-  if (error) return { success: false, error: 'Não foi possível cadastrar a instituição (verifique o CNPJ).' };
+  const { data, error } = await ctx.supabase
+    .from('institutions')
+    .insert({
+      name: parsed.data.name,
+      cnpj: parsed.data.cnpj || null,
+      address: parsed.data.address || null,
+      responsible_name: parsed.data.responsibleName || null,
+      phone: parsed.data.phone || null,
+      email: parsed.data.email || null,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, error: 'Não foi possível cadastrar a instituição (verifique o CNPJ).' };
 
+  await audit(ctx.profile.id, 'create', 'institutions', data.id);
   revalidatePath('/admin/cadastros/instituicoes');
   return { success: true };
 }
@@ -65,6 +79,7 @@ export async function deactivateInstitution(id: string): Promise<ActionResult> {
   const { error } = await ctx.supabase.from('institutions').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover a instituição.' };
 
+  await audit(ctx.profile.id, 'deactivate', 'institutions', id);
   revalidatePath('/admin/cadastros/instituicoes');
   return { success: true };
 }
@@ -87,18 +102,23 @@ export async function createLocation(formData: FormData): Promise<ActionResult> 
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
-  const { error } = await ctx.supabase.from('internship_locations').insert({
-    institution_id: parsed.data.institutionId,
-    name: parsed.data.name,
-    type: parsed.data.type || null,
-    address: parsed.data.address || null,
-    latitude: parsed.data.latitude,
-    longitude: parsed.data.longitude,
-    allowed_radius_meters: parsed.data.allowedRadiusMeters,
-    warning_radius_meters: parsed.data.warningRadiusMeters,
-  });
-  if (error) return { success: false, error: 'Não foi possível cadastrar o local.' };
+  const { data, error } = await ctx.supabase
+    .from('internship_locations')
+    .insert({
+      institution_id: parsed.data.institutionId,
+      name: parsed.data.name,
+      type: parsed.data.type || null,
+      address: parsed.data.address || null,
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+      allowed_radius_meters: parsed.data.allowedRadiusMeters,
+      warning_radius_meters: parsed.data.warningRadiusMeters,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, error: 'Não foi possível cadastrar o local.' };
 
+  await audit(ctx.profile.id, 'create', 'internship_locations', data.id);
   revalidatePath('/admin/cadastros/locais');
   return { success: true };
 }
@@ -110,6 +130,7 @@ export async function deactivateLocation(id: string): Promise<ActionResult> {
   const { error } = await ctx.supabase.from('internship_locations').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o local.' };
 
+  await audit(ctx.profile.id, 'deactivate', 'internship_locations', id);
   revalidatePath('/admin/cadastros/locais');
   return { success: true };
 }
@@ -150,6 +171,13 @@ async function createAuthProfile(
   return { profileId };
 }
 
+// Desfaz o profile + usuário Auth criados por createAuthProfile quando um
+// passo posterior (insert na tabela de domínio) falha depois.
+async function rollbackAuthProfile(admin: ReturnType<typeof createAdminClient>, profileId: string) {
+  await admin.from('profiles').delete().eq('id', profileId);
+  await admin.auth.admin.deleteUser(profileId);
+}
+
 // ============ Preceptores ============
 // O cadastro cria o acesso do preceptor no Supabase Auth já no momento do
 // cadastro (ver createAuthProfile) — o e-mail é obrigatório por isso.
@@ -173,22 +201,33 @@ export async function createPreceptor(formData: FormData): Promise<ActionResult>
   const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'preceptor');
   if ('error' in authResult) return { success: false, error: authResult.error };
 
-  const { error } = await ctx.supabase.from('preceptors').insert({
-    profile_id: authResult.profileId,
-    institution_id: parsed.data.institutionId,
-    full_name: parsed.data.fullName,
-    crm_number: parsed.data.crmNumber,
-    crm_state: parsed.data.crmState.toUpperCase(),
-    specialty: parsed.data.specialty || null,
-    email: parsed.data.email,
-    phone: parsed.data.phone || null,
-  });
-  if (error) {
-    await admin.from('profiles').delete().eq('id', authResult.profileId);
-    await admin.auth.admin.deleteUser(authResult.profileId);
-    return { success: false, error: 'Não foi possível cadastrar o preceptor (verifique o CRM/UF).' };
+  let preceptorId: string;
+  try {
+    const { data, error } = await ctx.supabase
+      .from('preceptors')
+      .insert({
+        profile_id: authResult.profileId,
+        institution_id: parsed.data.institutionId,
+        full_name: parsed.data.fullName,
+        crm_number: parsed.data.crmNumber,
+        crm_state: parsed.data.crmState.toUpperCase(),
+        specialty: parsed.data.specialty || null,
+        email: parsed.data.email,
+        phone: parsed.data.phone || null,
+      })
+      .select('id')
+      .single();
+    if (error || !data) {
+      await rollbackAuthProfile(admin, authResult.profileId);
+      return { success: false, error: 'Não foi possível cadastrar o preceptor (verifique o CRM/UF).' };
+    }
+    preceptorId = data.id;
+  } catch {
+    await rollbackAuthProfile(admin, authResult.profileId);
+    return { success: false, error: 'Não foi possível cadastrar o preceptor. Tente novamente.' };
   }
 
+  await audit(ctx.profile.id, 'create', 'preceptors', preceptorId);
   revalidatePath('/admin/cadastros/preceptores');
   return { success: true };
 }
@@ -210,31 +249,65 @@ export async function updatePreceptor(id: string, formData: FormData): Promise<A
 
   const { data: preceptor, error: fetchError } = await ctx.supabase
     .from('preceptors')
-    .select('id, profile_id')
+    .select('id, profile_id, profiles(email)')
     .eq('id', id)
     .single();
   if (fetchError || !preceptor) return { success: false, error: 'Preceptor não encontrado.' };
 
   const admin = createAdminClient();
-  let profileId = preceptor.profile_id as string | null;
+  const existingProfileId = preceptor.profile_id as string | null;
 
-  if (profileId) {
-    const { error: authError } = await admin.auth.admin.updateUserById(profileId, { email: parsed.data.email });
-    if (authError) return { success: false, error: 'Não foi possível atualizar o e-mail de acesso (já em uso?).' };
-    await admin
-      .from('profiles')
-      .update({ full_name: parsed.data.fullName, email: parsed.data.email })
-      .eq('id', profileId);
-  } else {
-    const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'preceptor');
-    if ('error' in authResult) return { success: false, error: authResult.error };
-    profileId = authResult.profileId;
+  if (existingProfileId) {
+    // Atualiza a tabela de domínio primeiro: se falhar (ex. CRM/UF duplicado),
+    // nada no Auth/profiles foi tocado ainda — sem risco de acesso órfão.
+    const { error } = await ctx.supabase
+      .from('preceptors')
+      .update({
+        institution_id: parsed.data.institutionId,
+        full_name: parsed.data.fullName,
+        crm_number: parsed.data.crmNumber,
+        crm_state: parsed.data.crmState.toUpperCase(),
+        specialty: parsed.data.specialty || null,
+        email: parsed.data.email,
+        phone: parsed.data.phone || null,
+      })
+      .eq('id', id);
+    if (error) return { success: false, error: 'Não foi possível atualizar o preceptor (verifique o CRM/UF).' };
+
+    const preceptorProfile = preceptor.profiles as { email: string } | { email: string }[] | null;
+    const currentEmail = Array.isArray(preceptorProfile) ? preceptorProfile[0]?.email : preceptorProfile?.email;
+    const emailChanged = currentEmail !== parsed.data.email;
+    if (emailChanged) {
+      const [authResult, profileResult] = await Promise.all([
+        admin.auth.admin.updateUserById(existingProfileId, { email: parsed.data.email }),
+        admin.from('profiles').update({ full_name: parsed.data.fullName, email: parsed.data.email }).eq('id', existingProfileId),
+      ]);
+      if (authResult.error || profileResult.error) {
+        return {
+          success: false,
+          error: 'Preceptor atualizado, mas não foi possível sincronizar o e-mail de acesso (já em uso?).',
+        };
+      }
+    } else {
+      const { error: profileError } = await admin
+        .from('profiles')
+        .update({ full_name: parsed.data.fullName })
+        .eq('id', existingProfileId);
+      if (profileError) return { success: false, error: 'Preceptor atualizado, mas não foi possível sincronizar o nome de acesso.' };
+    }
+
+    await audit(ctx.profile.id, 'update', 'preceptors', id);
+    revalidatePath('/admin/cadastros/preceptores');
+    return { success: true };
   }
+
+  const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'preceptor');
+  if ('error' in authResult) return { success: false, error: authResult.error };
 
   const { error } = await ctx.supabase
     .from('preceptors')
     .update({
-      profile_id: profileId,
+      profile_id: authResult.profileId,
       institution_id: parsed.data.institutionId,
       full_name: parsed.data.fullName,
       crm_number: parsed.data.crmNumber,
@@ -244,8 +317,12 @@ export async function updatePreceptor(id: string, formData: FormData): Promise<A
       phone: parsed.data.phone || null,
     })
     .eq('id', id);
-  if (error) return { success: false, error: 'Não foi possível atualizar o preceptor (verifique o CRM/UF).' };
+  if (error) {
+    await rollbackAuthProfile(admin, authResult.profileId);
+    return { success: false, error: 'Não foi possível atualizar o preceptor (verifique o CRM/UF).' };
+  }
 
+  await audit(ctx.profile.id, 'update', 'preceptors', id);
   revalidatePath('/admin/cadastros/preceptores');
   return { success: true };
 }
@@ -257,6 +334,7 @@ export async function deactivatePreceptor(id: string): Promise<ActionResult> {
   const { error } = await ctx.supabase.from('preceptors').update({ active: false }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível inativar o preceptor.' };
 
+  await audit(ctx.profile.id, 'deactivate', 'preceptors', id);
   revalidatePath('/admin/cadastros/preceptores');
   return { success: true };
 }
@@ -292,20 +370,31 @@ export async function createStudent(formData: FormData): Promise<ActionResult> {
   );
   if ('error' in authResult) return { success: false, error: authResult.error };
 
-  const { error } = await ctx.supabase.from('students').insert({
-    profile_id: authResult.profileId,
-    institution_id: parsed.data.institutionId,
-    course_id: parsed.data.courseId,
-    registration_number: parsed.data.registrationNumber,
-    contact_email: parsed.data.email,
-    required_hours: parsed.data.requiredHours,
-  });
-  if (error) {
-    await admin.from('profiles').delete().eq('id', authResult.profileId);
-    await admin.auth.admin.deleteUser(authResult.profileId);
-    return { success: false, error: 'Não foi possível cadastrar o aluno (verifique a matrícula).' };
+  let studentId: string;
+  try {
+    const { data, error } = await ctx.supabase
+      .from('students')
+      .insert({
+        profile_id: authResult.profileId,
+        institution_id: parsed.data.institutionId,
+        course_id: parsed.data.courseId,
+        registration_number: parsed.data.registrationNumber,
+        contact_email: parsed.data.email,
+        required_hours: parsed.data.requiredHours,
+      })
+      .select('id')
+      .single();
+    if (error || !data) {
+      await rollbackAuthProfile(admin, authResult.profileId);
+      return { success: false, error: 'Não foi possível cadastrar o aluno (verifique a matrícula).' };
+    }
+    studentId = data.id;
+  } catch {
+    await rollbackAuthProfile(admin, authResult.profileId);
+    return { success: false, error: 'Não foi possível cadastrar o aluno. Tente novamente.' };
   }
 
+  await audit(ctx.profile.id, 'create', 'students', studentId);
   revalidatePath('/admin/cadastros/alunos');
   return { success: true };
 }
@@ -326,31 +415,64 @@ export async function updateStudent(id: string, formData: FormData): Promise<Act
 
   const { data: student, error: fetchError } = await ctx.supabase
     .from('students')
-    .select('id, profile_id')
+    .select('id, profile_id, profiles(email)')
     .eq('id', id)
     .single();
   if (fetchError || !student) return { success: false, error: 'Aluno não encontrado.' };
 
   const admin = createAdminClient();
-  let profileId = student.profile_id as string | null;
+  const existingProfileId = student.profile_id as string | null;
 
-  if (profileId) {
-    const { error: authError } = await admin.auth.admin.updateUserById(profileId, { email: parsed.data.email });
-    if (authError) return { success: false, error: 'Não foi possível atualizar o e-mail de acesso (já em uso?).' };
-    await admin
-      .from('profiles')
-      .update({ full_name: parsed.data.fullName, email: parsed.data.email })
-      .eq('id', profileId);
-  } else {
-    const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'aluno');
-    if ('error' in authResult) return { success: false, error: authResult.error };
-    profileId = authResult.profileId;
+  if (existingProfileId) {
+    // Atualiza a tabela de domínio primeiro: se falhar (ex. matrícula
+    // duplicada), nada no Auth/profiles foi tocado ainda — sem risco de
+    // acesso órfão.
+    const { error } = await ctx.supabase
+      .from('students')
+      .update({
+        institution_id: parsed.data.institutionId,
+        course_id: parsed.data.courseId,
+        registration_number: parsed.data.registrationNumber,
+        contact_email: parsed.data.email,
+        required_hours: parsed.data.requiredHours,
+      })
+      .eq('id', id);
+    if (error) return { success: false, error: 'Não foi possível atualizar o aluno (verifique a matrícula).' };
+
+    const studentProfile = student.profiles as { email: string } | { email: string }[] | null;
+    const currentEmail = Array.isArray(studentProfile) ? studentProfile[0]?.email : studentProfile?.email;
+    const emailChanged = currentEmail !== parsed.data.email;
+    if (emailChanged) {
+      const [authResult, profileResult] = await Promise.all([
+        admin.auth.admin.updateUserById(existingProfileId, { email: parsed.data.email }),
+        admin.from('profiles').update({ full_name: parsed.data.fullName, email: parsed.data.email }).eq('id', existingProfileId),
+      ]);
+      if (authResult.error || profileResult.error) {
+        return {
+          success: false,
+          error: 'Aluno atualizado, mas não foi possível sincronizar o e-mail de acesso (já em uso?).',
+        };
+      }
+    } else {
+      const { error: profileError } = await admin
+        .from('profiles')
+        .update({ full_name: parsed.data.fullName })
+        .eq('id', existingProfileId);
+      if (profileError) return { success: false, error: 'Aluno atualizado, mas não foi possível sincronizar o nome de acesso.' };
+    }
+
+    await audit(ctx.profile.id, 'update', 'students', id);
+    revalidatePath('/admin/cadastros/alunos');
+    return { success: true };
   }
+
+  const authResult = await createAuthProfile(admin, parsed.data.email, parsed.data.fullName, 'aluno');
+  if ('error' in authResult) return { success: false, error: authResult.error };
 
   const { error } = await ctx.supabase
     .from('students')
     .update({
-      profile_id: profileId,
+      profile_id: authResult.profileId,
       institution_id: parsed.data.institutionId,
       course_id: parsed.data.courseId,
       registration_number: parsed.data.registrationNumber,
@@ -358,8 +480,12 @@ export async function updateStudent(id: string, formData: FormData): Promise<Act
       required_hours: parsed.data.requiredHours,
     })
     .eq('id', id);
-  if (error) return { success: false, error: 'Não foi possível atualizar o aluno (verifique a matrícula).' };
+  if (error) {
+    await rollbackAuthProfile(admin, authResult.profileId);
+    return { success: false, error: 'Não foi possível atualizar o aluno (verifique a matrícula).' };
+  }
 
+  await audit(ctx.profile.id, 'update', 'students', id);
   revalidatePath('/admin/cadastros/alunos');
   return { success: true };
 }
@@ -371,6 +497,7 @@ export async function deactivateStudent(id: string): Promise<ActionResult> {
   const { error } = await ctx.supabase.from('students').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o aluno.' };
 
+  await audit(ctx.profile.id, 'deactivate', 'students', id);
   revalidatePath('/admin/cadastros/alunos');
   return { success: true };
 }
@@ -393,18 +520,23 @@ export async function createInternship(formData: FormData): Promise<ActionResult
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
-  const { error } = await ctx.supabase.from('internships').insert({
-    institution_id: parsed.data.institutionId,
-    course_id: parsed.data.courseId,
-    code: parsed.data.code,
-    name: parsed.data.name,
-    description: parsed.data.description || null,
-    start_date: parsed.data.startDate,
-    end_date: parsed.data.endDate,
-    required_hours: parsed.data.requiredHours,
-  });
-  if (error) return { success: false, error: 'Não foi possível cadastrar o estágio (verifique o código).' };
+  const { data, error } = await ctx.supabase
+    .from('internships')
+    .insert({
+      institution_id: parsed.data.institutionId,
+      course_id: parsed.data.courseId,
+      code: parsed.data.code,
+      name: parsed.data.name,
+      description: parsed.data.description || null,
+      start_date: parsed.data.startDate,
+      end_date: parsed.data.endDate,
+      required_hours: parsed.data.requiredHours,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, error: 'Não foi possível cadastrar o estágio (verifique o código).' };
 
+  await audit(ctx.profile.id, 'create', 'internships', data.id);
   revalidatePath('/admin/cadastros/estagios');
   return { success: true };
 }
@@ -416,6 +548,7 @@ export async function deactivateInternship(id: string): Promise<ActionResult> {
   const { error } = await ctx.supabase.from('internships').update({ deleted_at: new Date().toISOString() }).eq('id', id);
   if (error) return { success: false, error: 'Não foi possível remover o estágio.' };
 
+  await audit(ctx.profile.id, 'deactivate', 'internships', id);
   revalidatePath('/admin/cadastros/estagios');
   return { success: true };
 }
@@ -441,14 +574,19 @@ export async function createSystemSetting(formData: FormData): Promise<ActionRes
   });
   if (!parsed.success) return { success: false, error: firstIssue(parsed.error) };
 
-  const { error } = await ctx.supabase.from('system_settings').insert({
-    key: parsed.data.key,
-    value: parseSettingValue(parsed.data.value),
-    description: parsed.data.description || null,
-    updated_by: ctx.profile.id,
-  });
-  if (error) return { success: false, error: 'Não foi possível criar a configuração (chave já existe?).' };
+  const { data, error } = await ctx.supabase
+    .from('system_settings')
+    .insert({
+      key: parsed.data.key,
+      value: parseSettingValue(parsed.data.value),
+      description: parsed.data.description || null,
+      updated_by: ctx.profile.id,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, error: 'Não foi possível criar a configuração (chave já existe?).' };
 
+  await audit(ctx.profile.id, 'create', 'system_settings', data.id);
   revalidatePath('/admin/configuracoes');
   return { success: true };
 }
@@ -462,12 +600,15 @@ export async function updateSystemSetting(key: string, formData: FormData): Prom
     return { success: false, error: 'Informe um valor.' };
   }
 
-  const { error } = await ctx.supabase
+  const { data, error } = await ctx.supabase
     .from('system_settings')
     .update({ value: parseSettingValue(rawValue), updated_by: ctx.profile.id })
-    .eq('key', key);
-  if (error) return { success: false, error: 'Não foi possível salvar a configuração.' };
+    .eq('key', key)
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, error: 'Não foi possível salvar a configuração.' };
 
+  await audit(ctx.profile.id, 'update', 'system_settings', data.id);
   revalidatePath('/admin/configuracoes');
   return { success: true };
 }

@@ -37,7 +37,7 @@ export const studentSchema = z.object({
   email: z.string().email('E-mail inválido'),
   registrationNumber: z.string().min(1, 'Informe a matrícula'),
   requiredHours: z.coerce.number().nonnegative().default(0),
-  password: z.string().min(6, 'A senha precisa ter ao menos 6 caracteres').optional().or(z.literal('')),
+  password: z.string().min(6, 'A senha precisa ter ao menos 6 caracteres').optional(),
 });
 
 export const systemSettingSchema = z.object({
